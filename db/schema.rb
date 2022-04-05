@@ -10,10 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_02_134729) do
+ActiveRecord::Schema.define(version: 2022_04_05_141326) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "hxerrors", force: :cascade do |t|
+    t.bigint "page_id", null: false
+    t.string "text"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["page_id"], name: "index_hxerrors_on_page_id"
+  end
 
   create_table "pages", force: :cascade do |t|
     t.string "url"
@@ -21,7 +29,18 @@ ActiveRecord::Schema.define(version: 2022_04_02_134729) do
     t.bigint "site_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.boolean "canonical", default: false
+    t.string "meta_description"
     t.index ["site_id"], name: "index_pages_on_site_id"
+  end
+
+  create_table "seoerrors", force: :cascade do |t|
+    t.bigint "page_id", null: false
+    t.string "text"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.integer "ligne"
+    t.index ["page_id"], name: "index_seoerrors_on_page_id"
   end
 
   create_table "sites", force: :cascade do |t|
@@ -31,5 +50,7 @@ ActiveRecord::Schema.define(version: 2022_04_02_134729) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
+  add_foreign_key "hxerrors", "pages"
   add_foreign_key "pages", "sites"
+  add_foreign_key "seoerrors", "pages"
 end

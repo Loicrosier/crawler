@@ -1,3 +1,4 @@
 <% @sites.each do |site| %>
+<%= site.name %>
 <%= link_to 'voir', site_path(site.id) %>
 <% end %>

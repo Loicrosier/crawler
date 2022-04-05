@@ -7,4 +7,6 @@ Rails.application.routes.draw do
   get 'sites', to: 'sites#index'
   get 'crawl/:id', to: 'sites#crawl', as: 'crawl'
 
+  get 'page/:id', to: 'pages#show', as: 'page'
+
 end
