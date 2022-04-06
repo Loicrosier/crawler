@@ -1,7 +1,14 @@
 <%= link_to 'crawl', crawl_path(@site.id) %>
+<%= link_to 'crawl avec sitemap', sitemap_path(@site.id) %>
 <%= @site.url %>
 
 <% @site.pages.each do |page| %>
 <%= link_to "#{page.url}", page_path(page.id) %>
 <br>
+<% end %>
+
+<%= link_to site_destroy_path(@site.id), method: :delete, data: {confirm: "tu es sure ? "} do %>
+  <div class="destroy-site">
+    <%= "destroy" %>
+  </div>
 <% end %>

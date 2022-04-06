@@ -1,0 +1,3 @@
+class SitemapsController < ApplicationController
+
+end

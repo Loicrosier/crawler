@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_05_141326) do
+ActiveRecord::Schema.define(version: 2022_04_06_102830) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -43,6 +43,14 @@ ActiveRecord::Schema.define(version: 2022_04_05_141326) do
     t.index ["page_id"], name: "index_seoerrors_on_page_id"
   end
 
+  create_table "sitemaps", force: :cascade do |t|
+    t.bigint "site_id", null: false
+    t.string "text"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["site_id"], name: "index_sitemaps_on_site_id"
+  end
+
   create_table "sites", force: :cascade do |t|
     t.string "name"
     t.string "url"
@@ -50,7 +58,22 @@ ActiveRecord::Schema.define(version: 2022_04_05_141326) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
+  create_table "titles", force: :cascade do |t|
+    t.string "h1"
+    t.string "h2"
+    t.string "h3"
+    t.string "h4"
+    t.string "h5"
+    t.string "h6"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.bigint "page_id"
+    t.index ["page_id"], name: "index_titles_on_page_id"
+  end
+
   add_foreign_key "hxerrors", "pages"
   add_foreign_key "pages", "sites"
   add_foreign_key "seoerrors", "pages"
+  add_foreign_key "sitemaps", "sites"
+  add_foreign_key "titles", "pages"
 end

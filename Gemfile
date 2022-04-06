@@ -30,8 +30,8 @@ gem 'bootsnap', '>= 1.4.4', require: false
 
 # simple form
 gem 'simple_form'
-gem 'spider', '~> 0.5.0'
-gem 'mechanize'
+gem 'anemone', '~> 0.7.2'
+gem 'mechanize', '~> 2.7', '>= 2.7.5'
 
 
 group :development, :test do
