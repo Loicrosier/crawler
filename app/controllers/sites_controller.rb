@@ -45,6 +45,11 @@ class SitesController < ApplicationController
           doc = Nokogiri::HTML(URI.open(site))
           doc.css('a').each { |link| links << link['href'] }
 
+          # recupere les liens du site avec mechanize
+          agent = Mechanize.new
+          page = agent.get(site)
+          page.css("a").each { |link| links << link['href'] }
+
           # trie du tableau des liens
           links.uniq!
           links.reject! { |link| link.nil? || (!link.start_with?(site) && !link.start_with?("./")) }
@@ -239,12 +244,10 @@ class SitesController < ApplicationController
     # iterer sur chaque lien pour cree les pages du site
     lien.each do |link|
       if link.start_with?('./')
-       link = url + link.gsub!('./', '/')
+        link = url + link.gsub!('./', '/')
       end
       Page.where(url: link).destroy_all
-       if check_sitemap_link(link) != 'good'
-        next
-       end
+      next if check_sitemap_link(link) != 'good'
        doc = Nokogiri::HTML(URI.open(link))
       meta_desc = doc.css('meta[name="description"]').text
       Page.create(url: link, site_id: @site.id, content: doc.content.to_s, meta_description: meta_desc)
@@ -384,16 +387,10 @@ def get_links_sitemap(site)
 # fonction pour recuperer les lien (fonction qui appelle les autres fonctions)
 def lunch_link_sitemap(url)
       urls = []
-      if check_sitemap_link(url) == 'good'
+      # si url du si es bonne
         urls << get_links_sitemap(url)
-      else
         # si la requete es pas bonne
-        # et que l'url fini par page-sitemap.xml on remplace et reessaye
-        if url.end_with?("page-sitemap.xml")
-          good_url = url.gsub!("page-sitemap.xml","sitemap.xml")
-          urls << get_links_sitemap(good_url)
-        end
-      end
+        # et que l'url fini par page-sitemap.xml on remplace et reessay
       return urls.flatten!
     end
 

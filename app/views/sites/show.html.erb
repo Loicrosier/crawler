@@ -7,6 +7,8 @@
 <br>
 <% end %>
 
+<%= @site.pages.count %>
+
 <%= link_to site_destroy_path(@site.id), method: :delete, data: {confirm: "tu es sure ? "} do %>
   <div class="destroy-site">
     <%= "destroy" %>
