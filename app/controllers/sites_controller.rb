@@ -333,13 +333,6 @@ def lunch_link_sitemap(url)
         end
       end
       return urls.flatten!
-    enddef check_sitemap_link(url)
-  begin
-    document = Nokogiri::XML(URI.open(url))
-    'good'
-  rescue Exception => e
-    e.message
-  end
 end
 
 
@@ -434,11 +427,6 @@ def sitemap
 end
 
 ########################################################################
-
-
-
-
-
 
   private
 
