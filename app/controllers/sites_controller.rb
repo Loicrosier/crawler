@@ -87,10 +87,10 @@ class SitesController < ApplicationController
 
   ###############################################################################
   # fonction pour comparer 2mots dans un tableau
-  def check_word(tableau)
+  def check_word(tableau, page_id)
     tableau.each do |mot|
       if tableau.to_s.scan(/#{mot}/).count > 1
-        Hxerror.create(page_id: page.id, text: "doublon: #{mot}")
+        Hxerror.create(page_id: page_id, text: "doublon: #{mot}")
       end
     end
   end
@@ -126,7 +126,7 @@ class SitesController < ApplicationController
     end
 
    # verif titre doublon
-   check_word(title)
+   check_word(title, page.id)
 
     # verif taille
     title.each do |t|
@@ -253,8 +253,8 @@ class SitesController < ApplicationController
       if link.start_with?('./')
         link = url + link.gsub!('./', '/')
       end
-      next if check_sitemap_link(link) != 'good'
       Page.where(url: link).destroy_all
+      next if check_sitemap_link(link) != 'good'
        doc = Nokogiri::HTML(URI.open(link))
       meta_desc = doc.css('meta[name="description"]').text
       Page.create(url: link, site_id: @site.id, content: doc.content.to_s, meta_description: meta_desc)
@@ -263,6 +263,8 @@ class SitesController < ApplicationController
     @pages = Page.where(site_id: @site.id)
 
     @pages.each do |page|
+      page.seoerrors.destroy_all
+      page.hxerrors.destroy_all
       check_meta_title(page.id)
       check_meta_description(page.id)
       check_title(page.url, page.id)
@@ -326,6 +328,22 @@ def get_links_sitemap(site)
     return link_sitemap
  end
  ###########################################################################################
+# fonction pour recuperer les lien (fonction qui appelle les autres fonctions)
+def lunch_link_sitemap(url)
+      urls = []
+      if check_sitemap_link(url) == 'good'
+        urls << get_links_sitemap(url)
+      else
+        # si la requete es pas bonne
+        # et que l'url fini par page-sitemap.xml on remplace et reessaye
+        if url.end_with?("page-sitemap.xml")
+          good_url = url.gsub!("page-sitemap.xml","sitemap.xml")
+          urls << get_links_sitemap(good_url)
+        end
+      end
+      return urls.flatten!
+end
+
 
 
 # recupere les lien dans le xml en fonction de leur format
@@ -340,43 +358,43 @@ def get_links_sitemap(site)
 
         # si les liens sont normaux
        document.to_s.scan(/<loc>(.*?)<\/loc>/).each do |url_in|
-            if url_in[0].start_with?("h") && url_in[0].end_with?(".html")
-              link_sitemap << url_in[0]
-            end
-            # si les liens recu commence par <CDATA ext
-            if url_in[0].start_with?("<![CDATA[") && url_in[0].end_with?("]]>")
-              url = url_in[0].gsub!("<![CDATA[","")
-              url = url.gsub!("]]>","")
-              link_sitemap << url
-            end
-            # verif si les liens du site map sont des xml change de chemin
-            if url_in[0].end_with?(".xml")
-            url_sitemap = site.gsub!("sitemap.xml","page-sitemap.xml")
-              if check_sitemap_link(url_sitemap) == 'good'
-                link_sitemap << get_links_sitemap(url_sitemap)
-              end
+          if url_in[0].start_with?("h") && url_in[0].end_with?(".html")
+            link_sitemap << url_in[0]
+          end
+          # si les liens recu commence par <CDATA ext
+          if url_in[0].start_with?("<![CDATA[") && url_in[0].end_with?("]]>")
+            url = url_in[0].gsub!("<![CDATA[","")
+            url = url.gsub!("]]>","")
+            link_sitemap << url
+          end
+          # verif si les liens du site map sont des xml change de chemin
+          if url_in[0].end_with?(".xml")
+           url_sitemap = site.gsub!("sitemap.xml","page-sitemap.xml")
+            if check_sitemap_link(url_sitemap) == 'good'
+              link_sitemap << get_links_sitemap(url_sitemap)
             end
           end
+        end
 
-        else # else du si la page sitemap n'est pas good
-          url_sitemap = site.gsub!("sitemap.xml","page-sitemap.xml")
-          if check_sitemap_link(url_sitemap) == 'good'
-            link_sitemap << get_links_sitemap(url_sitemap)
-          end
+      else # else du si la page sitemap n'est pas good
+        url_sitemap = site.gsub!("sitemap.xml","page-sitemap.xml")
+        if check_sitemap_link(url_sitemap) == 'good'
+          link_sitemap << get_links_sitemap(url_sitemap)
+        end
       end
 
     return link_sitemap
  end
  ###########################################################################################
 # fonction pour recuperer les lien (fonction qui appelle les autres fonctions)
-def lunch_link_sitemap(url)
-      urls = []
-      # si url du si es bonne
-        urls << get_links_sitemap(url)
-        # si la requete es pas bonne
-        # et que l'url fini par page-sitemap.xml on remplace et reessay
-      return urls.flatten!
-    end
+# def lunch_link_sitemap(url)
+#       urls = []
+#       # si url du si es bonne
+#         urls << get_links_sitemap(url)
+#         # si la requete es pas bonne
+#         # et que l'url fini par page-sitemap.xml on remplace et reessay
+#       return urls.flatten!
+#     end
 
 ###############################################################################################
 
@@ -406,6 +424,8 @@ def sitemap
     @pages = Page.where(site_id: @site.id)
 
     @pages.each do |page|
+      page.seoerrors.destroy_all
+      page.hxerrors.destroy_all
       check_meta_title(page.id)
       check_meta_description(page.id)
       check_title(page.url, page.id)
@@ -425,3 +445,6 @@ end
     params.require(:site).permit(:name, :url)
   end
 end
+
+
+# finir d'implementer checktitlesizeetcreelestitles
