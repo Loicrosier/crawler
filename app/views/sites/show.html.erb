@@ -1,11 +1,27 @@
-<%= link_to 'crawl', crawl_path(@site.id) %>
-<%= link_to 'crawl avec sitemap', sitemap_path(@site.id) %>
-<%= @site.url %>
 
-<% @site.pages.each do |page| %>
-<%= link_to "#{page.url}", page_path(page.id) %>
-<br>
-<% end %>
+<div class="container-site-pages">
+  <% @site.pages.each do |page| %>
+    <div class="container-pages-url">
+    <%# partie nombre d'erreur de la page %>
+        <% if page.seoerrors.count >= 1 || page.hxerrors.count >= 1 %>
+      <span id=nombre-derreur>
+          <strong> cette page contient <%= page.seoerrors.count + page.hxerrors.count %> erreurs </strong>
+      </span>
+        <% end %>
+
+      <%# partie lien de la page afficher %>
+      <div class='url-du-site'>
+        <%= page.url %>
+      </div>
+        <%# partie du button pour aller sur la page %>
+      <div class='btn-voir'>
+        <%= link_to page_path(page.id) do %>
+          <i class="fa-solid fa-eye"></i>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
 
 <%= @site.pages.count %>
 

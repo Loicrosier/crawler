@@ -14,10 +14,17 @@
  *= require_self
  */
 
+
+
  @import 'components/print_screen';
  @import 'components/form-create-site';
+  @import 'components/show-page';
+  @import 'components/navbar';
+  @import 'components/index-site';
 
-
+a:link {
+  text-decoration: none !important;
+}
  body {
    background-color: rgba(20, 19, 19, 0.825) !important;
  }

@@ -1,4 +1,63 @@
-<% @sites.each do |site| %>
-<%= site.name %>
-<%= link_to 'voir', site_path(site.id) %>
-<% end %>
+<div class="container">
+
+      <% @sites.each do |site| %>
+          <div class="container-site-index">
+            <h2 id='sitenameh2'><%= site.name %></h2>
+
+            <div class="container-site-info">
+                <% if site.url.size > 50 %>
+                  <strong class='strong-site-url'>URL DU SITE: <%= site.url.first(50) %>...</strong>
+                  <% else %>
+                    <strong class='strong-site-url'>URL DU SITE: <%= site.url %></strong>
+                  <% end %>
+
+
+                <% if site.last_crawl.present? %>
+                  <strong class='strong-site-index' >DERNIER CRAWL LE: <%= site.last_crawl %></strong>
+                <% else %>
+                    <strong class='strong-site-index' >DERNIER CRAWL LE: Pas encore crawler </strong>
+                <% end %>
+
+
+                <% if !site.last_crawl_mode.nil? %>
+                  <strong class='strong-site-index' >DERNIER CRAWL LE: <%= site.last_crawl_mode %></strong>
+                <% else %>
+                  <strong class='strong-site-index' >DERNIER CRAWL MODE: Pas encore crawler </strong>
+                <% end %>
+
+            </div>
+
+
+            <div class="container-btn">
+                <%= link_to site_path(site.id) do %>
+                    <div class="btn-voir-site-on-index">
+                        <i class="fa-solid fa-eye"></i>
+                    </div>
+                <% end %>
+
+                <%= link_to crawl_path(site.id) do %>
+                    <div class="btn-crawl-on-index-site">
+                      <i class="fa-solid fa-sitemap"></i>
+                    </div>
+                <% end %>
+
+                <%= link_to sitemap_path(site.id) do %>
+                    <div class="btn-sitemap-on-index-site">
+                      <i class="fa-solid fa-sitemap"> Sitemap</i>
+                    </div>
+
+                  <% end %>
+
+                  <%= link_to site_destroy_path(site.id), method: :delete, data: { confirm: 'es tu sure ?'} do %>
+                      <div class="btn-destroy-site-on-index">
+                          <i class="fa-solid fa-trash-alt"></i>
+                      </div>
+                  <% end %>
+
+            </div>
+
+
+        </div>
+    <% end %>
+
+</div>

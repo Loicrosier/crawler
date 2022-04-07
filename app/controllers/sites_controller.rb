@@ -135,7 +135,8 @@ class SitesController < ApplicationController
       end
       # verif si la taille des mots dans le titre es plus grand que 4
       if t.scan(/\w+/).size < 4
-       Hxerror.create(page_id: page.id, text: "Le nombre de mot d'un des titres est trop court")
+
+       Hxerror.create(page_id: page.id, text: "titres qui ont moins de 4 mots")
       end
       # verif si le titre est trop court
       if t.size < 30
@@ -189,7 +190,7 @@ class SitesController < ApplicationController
         begin
           dst = URI.parse(URI.encode(a['href'].to_s))
           rescue
-            Seoerror.create(ligne: a.line, text: a["href"].to_s.force_encoding("utf-8")[0..254], page_id: page.id )
+            Seoerror.create(ligne: a.line, text: "pas de nofollow", page_id: page.id )
             next
           end
           if (!(a["href"].start_with? "./") && !(dst.to_s.include? hst.to_s) && !(dst.host.nil?)) && (!a["rel"] || !a["rel"].include?("nofollow"))
@@ -272,7 +273,9 @@ class SitesController < ApplicationController
       check_canonical(page.id)
       check_div(page.id)
     end
-
+    @site.last_crawl = DateTime.now
+    @site.last_crawl_mode = "crawl sans sitemap url"
+    @site.save
     redirect_to site_path(@site), notice: "Site crawlé avec succès"
 
   end
@@ -433,8 +436,10 @@ def sitemap
       check_canonical(page.id)
       check_div(page.id)
     end
-
-    redirect_to site_path(@site), notice: "url sitemap crawlé avec succès"
+    @site.last_crawl = DateTime.now
+    @site.last_crawl_mode = "sitemap"
+    @site.save
+    redirect_to site_path(@site.id), notice: "url sitemap crawlé avec succès"
 end
 
 ########################################################################

@@ -1,7 +1,156 @@
-<%= @page.url %>
-<%= @page.meta_description %>
-<%= @errors %>
 
-<div id="print-screen">
-<%= 'print' %>
+<div class="container-error">
+  <div class="errors">
+<%# check meta title present ou pas %>
+<%= @errors %>
+      <% if @errors.include?('pas de meta title')%>
+        <p class="erreur">pas de meta title</p>
+        <% else %>
+          <p class="pas-derreur">pas de meta title</p>
+      <% end %>
+
+  <%# check meta title si trop long %>
+
+      <% if @errors.include?("meta title trop long (+60 char)") %>
+          <p class='erreur'>meta title trop long (+60 char)</p>
+        <% else %>
+          <p class='pas-derreur'>meta title trop long (+60 char)</p>
+        <% end %>
+
+  <%# ##### meta description check %>
+
+        <%# check meta description es presente %>
+        <% if @errors.include?('pas de meta description') %>
+            <p class="erreur">pas de meta description</p>
+          <% else %>
+            <p class="pas-derreur">pas de meta description</p>
+        <% end %>
+
+        <%# check meta description si trop courte %>
+        <% if @errors.include?('meta trop court') %>
+            <p class="erreur">meta trop courte</p>
+          <% else %>
+            <p class="pas-derreur">meta trop courte</p>
+        <% end %>
+
+        <%# check meta description taille es trop grande ou pas %>
+
+        <% if @errors.include?("meta description trop long (+160 char)") %>
+          <p class='erreur'>meta description trop long (+160 char)</p>
+        <% else %>
+          <p class='pas-derreur'>meta description trop long (+160 char)</p>
+        <% end %>
+
+    <%# check title (les h) %>
+
+        <%# check si il y a des balise h1 double %>
+
+        <% if @errors.include?('h1 double') %>
+          <p class="erreur">balise H1 double</p>
+        <% else %>
+          <p class="pas-derreur">balise H1 double</p>
+        <% end %>
+
+        <%# check si il y a des titres identiques %>
+
+        <% if @errors.include?('doublon:') %>
+          <p class="erreur">titre identique</p>
+        <% else %>
+          <p class="pas-derreur">titre identique</p>
+        <% end %>
+
+        <%# check tailles du nombre de mot du titre trop petit %>
+
+        <% if @errors.include?('titres qui ont moins de 4 mots') %>
+          <p class="erreur">il y a un ou plusieurs titres qui ont moins de 4 mots</p>
+        <% else %>
+          <p class="pas-derreur">il y a un ou plusieurs titres qui ont moins de 4 mots</p>
+        <% end %>
+
+      <%# check de la tailles si trop long %>
+
+        <% if @errors.include?('HX trop long') %>
+          <p class="erreur"> il y un ou plusieurs titres trop long </p>
+        <% else %>
+          <p class="pas-derreur"> il y un ou plusieurs titres trop long </p>
+        <% end %>
+
+        <%# check nombre de characteres trop court des titres %>
+        <% if @errors.include?('nombre de Titre trop court:') %>
+          <p class="erreur"> il y un ou plusieurs titres qui ont moins de 30 charactères </p>
+        <% else %>
+          <p class="pas-derreur"> il y un ou plusieurs titres qui ont moins de 30 charactères </p>
+        <% end %>
+
+    <%# CHECK DES IMG %>
+
+        <%#  check si alt des images presente %>
+
+        <% if @errors.include?("pas d'alt sur l'image(") %>
+          <p class="erreur"> il y a un ou plusieurs images sans alt </p>
+        <% else %>
+          <p class="pas-derreur"> il y a un ou plusieurs images sans alt </p>
+        <% end %>
+
+        <%# check si alt de l'image est trop grande %>
+
+        <% if @errors.include?("alt de l'image trop longue") %>
+          <p class="erreur"> il y a un ou plusieurs images avec alt trop longue </p>
+        <% else %>
+          <p class="pas-derreur"> il y a un ou plusieurs images avec alt trop longue </p>
+        <% end %>
+
+        <%# LIEN CANONICAL %>
+
+        <%# check si il y a un lien canonique %>
+
+         <% if @errors.include?('pas de canonical') %>
+          <p class="erreur"> lien canonical </p>
+        <% else %>
+          <p class="pas-derreur"> lien canonical </p>
+        <% end %>
+
+        <%# Partie check des urls %>
+
+        <%# check si il y a des url avec underscore %>
+
+        <% if @errors.include?('lien avec underscore') %>
+          <p class="erreur"> il y a un ou plusieurs lien avec underscore </p>
+        <% else %>
+          <p class="pas-derreur"> il y a un ou plusieurs lien avec underscore </p>
+        <% end %>
+
+        <%# check si il y a des url d'image avec underscore %>
+
+        <% if @errors.include?('lien image avec underscore') %>
+          <p class="erreur"> il y a un ou plusieurs lien d'image avec underscore </p>
+        <% else %>
+          <p class="pas-derreur"> il y a un ou plusieurs lien d'image avec underscore </p>
+        <% end %>
+
+        <%# check si nofollow present %>
+
+        <% if @errors.include?('pas de nofollow') %>
+          <p class="erreur"> pas de nofollow </p>
+        <% else %>
+          <p class="pas-derreur"> pas de nofollow </p>
+        <% end %>
+
+        <%# check lien externe avec rel nofollow present %>
+
+        <% if @errors.include?('lien externe avec rel nofollow') %>
+          <p class="erreur"> lien externe avec rel nofollow </p>
+        <% else %>
+          <p class="pas-derreur"> lien externe avec rel nofollow </p>
+        <% end %>
+
+    <%# check div result %>
+
+      <% if @errors.include?("Il y a une div pas fermée") %>
+          <p class='erreur'>Div pas fermée</p>
+        <% else %>
+          <p class='pas-derreur'>Div pas fermée</p>
+        <% end %>
+  </div>
+
 </div>
