@@ -85,6 +85,16 @@ class SitesController < ApplicationController
     end
   end
 
+  ###############################################################################
+  # fonction pour comparer 2mots dans un tableau
+  def check_word(tableau)
+    tableau.each do |mot|
+      if tableau.to_s.scan(/#{mot}/).count > 1
+        Hxerror.create(page_id: page.id, text: "doublon: #{mot}")
+      end
+    end
+  end
+
 ###############################################################################
   def check_title(url, page)
     # ( page = id de la page )
@@ -99,16 +109,16 @@ class SitesController < ApplicationController
       title << "H2" + doc.search('h2').text
     end
     if doc.css('h3').size > 0
-    title << "H3" + doc.search('h3').text
+    title << doc.search('h3').text
     end
     if doc.css('h4').size > 0
-      title << "H4" + doc.search('h4').text
+      title << doc.search('h4').text
     end
     if doc.css('h5').size > 0
-      title << "H5" + doc.search('h5').text
+      title << doc.search('h5').text
     end
     if doc.css('h6').size > 0
-      title << "H6" +doc.search('h6').text
+      title << doc.search('h6').text
     end
     # verif balise h1 double
     if doc.css('h1').size > 1
@@ -116,11 +126,8 @@ class SitesController < ApplicationController
     end
 
    # verif titre doublon
-    if title.uniq! == nil
-      "aucun titre double"
-    else
-       Hxerror.create(page_id: page.id, text: "HX doubler")
-    end
+   check_word(title)
+
     # verif taille
     title.each do |t|
       if t.length > 70
