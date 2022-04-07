@@ -33,7 +33,7 @@
   color: rgb(73, 72, 72);
   position: relative;
 
-  left: 33%;
+  left: 25%;
 }
 // titre h2 de la navbar dans sites new
 #h2new-site {
@@ -79,6 +79,10 @@
    justify-content: center;
 }
 
+.btn-crawl:hover {
+  background-color: rgb(0, 93, 186);
+}
+
 
 .btn-sitemap {
     display: flex;
@@ -95,4 +99,8 @@
     justify-content: center;
     margin-left: 4px;
 
+}
+
+.btn-sitemap:hover {
+  background-color: rgb(0, 93, 186);
 }
