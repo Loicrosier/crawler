@@ -1,8 +1,12 @@
 
+
+<strong id='labelname'>Nom du site</strong>
+<strong id='labelurl'>Url</strong>
+
 <div class="container-form-site">
   <%= simple_form_for @site, url: site_create_path do |f| %>
-  <%= f.input :name, label: false %>
-  <%= f.input :url, label: false %>
+  <%= f.input :name, label: false, hint: "ne peux pas etre vide" %>
+  <%= f.input :url, label: false, hint: "ne peux pas etre vide" %>
   <%= f.submit %>
   <% end %>
 </div>

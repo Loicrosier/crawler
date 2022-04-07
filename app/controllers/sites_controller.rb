@@ -226,7 +226,7 @@ class SitesController < ApplicationController
     if @site.save
      redirect_to site_path(@site.id), notice: "Site créé avec succès"
     else
-      render 'new'
+      redirect_to site_new_path, notice: "Erreur lors de la création du site (#{@site.errors.full_messages})"
     end
   end
 

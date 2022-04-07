@@ -1,6 +1,6 @@
 .navbar {
   display: flex;
-  background-color: rgb(80, 163, 205);
+  background-color: rgba(0, 255, 255, 0.804);
   height: 100px;
   margin-bottom: 10px;
 
@@ -14,7 +14,6 @@
   top: 4%;
   left: 84%;
   background-color: rgb(26, 255, 0);
-text-decoration: none !important;
   padding: 10px;
   border-radius: 8px;
   display: flex;
@@ -34,7 +33,21 @@ text-decoration: none !important;
   color: rgb(73, 72, 72);
   position: relative;
 
-  left: 25%;
+  left: 33%;
+}
+// titre h2 de la navbar dans sites new
+#h2new-site {
+  color: rgb(73, 72, 72);
+  position: relative;
+  left: 45%;
+  top: 10%;
+}
+// h2 nombres de site sur site index
+#h2index-site {
+  color: rgb(72, 72, 72);
+  position: relative;
+  left: 43%;
+  top: 10%;
 }
 
 #btn-retour {
