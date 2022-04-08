@@ -1,8 +1,8 @@
 
 <div class="container-error">
+<% if @errors.count > 0 %>
   <div class="errors">
 <%# check meta title present ou pas %>
-<%= @errors %>
       <% if @errors.include?('pas de meta title')%>
         <p class="erreur">pas de meta title</p>
         <% else %>
@@ -152,5 +152,7 @@
           <p class='pas-derreur'>Div pas fermée</p>
         <% end %>
   </div>
+
+  <% end  %> <%# end di si erreurs sup a 0%>
 
 </div>
