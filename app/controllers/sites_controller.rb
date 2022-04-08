@@ -15,22 +15,22 @@ class SitesController < ApplicationController
         # recupere les liens du site avec mechanize si Nokogiri error
 
         # recupere les liens du site avec mechanize
-        agent = Mechanize.new
-        page = agent.get(site)
-        page.css("a").each { |link| links << link['href'] }
+          agent = Mechanize.new
+          page = agent.get(site)
+          page.css("a").each { |link| links << link['href'] }
 
-        # recupere les liens du site avec Anemone
-        Anemone.crawl(site) do |anemone|
-          anemone.on_every_page do |page|
-            page.links.each do |link|
-              links << link.to_s
+          # recupere les liens du site avec Anemone
+          Anemone.crawl(site) do |anemone|
+            anemone.on_every_page do |page|
+              page.links.each do |link|
+                links << link.to_s
+              end
             end
           end
-        end
 
 
-        links.uniq!
-        links.reject! { |link| link.nil? || (!link.start_with?(site) || !link.start_with?("./")) }
+          links.uniq!
+          links.reject! { |link| link.nil? || (!link.start_with?(site) || !link.start_with?("./")) }
       else # si le site est good avec nokogiri
             # recupere les liens du site avec anemone
           Anemone.crawl(site) do |anemone|
@@ -247,6 +247,10 @@ class SitesController < ApplicationController
   # fonction qui appelle le crawl
   def crawl
     @site = Site.find(params[:id])
+    @site.last_crawl = Time.now
+    @site.last_crawl_mode = "crawl sans sitemap url"
+    @site.save
+
     url = @site.url
     lien = get_urls(url)
     # iterer sur chaque lien pour cree les pages du site
@@ -273,9 +277,6 @@ class SitesController < ApplicationController
       check_canonical(page.id)
       check_div(page.id)
     end
-    @site.last_crawl = DateTime.now
-    @site.last_crawl_mode = "crawl sans sitemap url"
-    @site.save
     redirect_to site_path(@site), notice: "Site crawlé avec succès"
 
   end
@@ -289,47 +290,6 @@ def check_sitemap_link(url)
   end
 end
 
-
-
-# recupere les lien dans le xml en fonction de leur format
-def get_links_sitemap(site)
-  # site = url du site
-  # url_in = url dans le xml
-        link_sitemap = []
-        # verif si le lien de sitemap.xml existe sinon change
-      if check_sitemap_link(site) == 'good'
-        #### travail xml #####
-        document = Nokogiri::XML(URI.open(site))
-
-        # si les liens sont normaux
-       document.to_s.scan(/<loc>(.*?)<\/loc>/).each do |url_in|
-          if url_in[0].start_with?("h") && url_in[0].end_with?(".html")
-            link_sitemap << url_in[0]
-          end
-          # si les liens recu commence par <CDATA ext
-          if url_in[0].start_with?("<![CDATA[") && url_in[0].end_with?("]]>")
-            url = url_in[0].gsub!("<![CDATA[","")
-            url = url.gsub!("]]>","")
-            link_sitemap << url
-          end
-          # verif si les liens du site map sont des xml change de chemin
-          if url_in[0].end_with?(".xml")
-           url_sitemap = site.gsub!("sitemap.xml","page-sitemap.xml")
-            if check_sitemap_link(url_sitemap) == 'good'
-              link_sitemap << get_links_sitemap(url_sitemap)
-            end
-          end
-        end
-
-      else # else du si la page sitemap n'est pas good
-        url_sitemap = site.gsub!("sitemap.xml","page-sitemap.xml")
-        if check_sitemap_link(url_sitemap) == 'good'
-          link_sitemap << get_links_sitemap(url_sitemap)
-        end
-      end
-
-    return link_sitemap
- end
  ###########################################################################################
 # fonction pour recuperer les lien (fonction qui appelle les autres fonctions)
 def lunch_link_sitemap(url)
@@ -361,22 +321,22 @@ def get_links_sitemap(site)
 
         # si les liens sont normaux
        document.to_s.scan(/<loc>(.*?)<\/loc>/).each do |url_in|
-          if url_in[0].start_with?("h") && url_in[0].end_with?(".html")
-            link_sitemap << url_in[0]
-          end
-          # si les liens recu commence par <CDATA ext
-          if url_in[0].start_with?("<![CDATA[") && url_in[0].end_with?("]]>")
-            url = url_in[0].gsub!("<![CDATA[","")
-            url = url.gsub!("]]>","")
-            link_sitemap << url
-          end
-          # verif si les liens du site map sont des xml change de chemin
-          if url_in[0].end_with?(".xml")
-           url_sitemap = site.gsub!("sitemap.xml","page-sitemap.xml")
-            if check_sitemap_link(url_sitemap) == 'good'
-              link_sitemap << get_links_sitemap(url_sitemap)
+            if url_in[0].start_with?("h") && url_in[0].end_with?(".html")
+              link_sitemap << url_in[0]
             end
-          end
+            # si les liens recu commence par <CDATA ext
+            if url_in[0].start_with?("<![CDATA[") && url_in[0].end_with?("]]>")
+              url = url_in[0].gsub!("<![CDATA[","")
+              url = url.gsub!("]]>","")
+              link_sitemap << url
+            end
+            # verif si les liens du site map sont des xml change de chemin
+            if url_in[0].end_with?(".xml")
+            url_sitemap = site.gsub!("sitemap.xml","page-sitemap.xml")
+              if check_sitemap_link(url_sitemap) == 'good'
+                link_sitemap << get_links_sitemap(url_sitemap)
+              end
+            end
         end
 
       else # else du si la page sitemap n'est pas good
@@ -388,16 +348,6 @@ def get_links_sitemap(site)
 
     return link_sitemap
  end
- ###########################################################################################
-# fonction pour recuperer les lien (fonction qui appelle les autres fonctions)
-# def lunch_link_sitemap(url)
-#       urls = []
-#       # si url du si es bonne
-#         urls << get_links_sitemap(url)
-#         # si la requete es pas bonne
-#         # et que l'url fini par page-sitemap.xml on remplace et reessay
-#       return urls.flatten!
-#     end
 
 ###############################################################################################
 
@@ -405,6 +355,9 @@ def get_links_sitemap(site)
 def sitemap
   lien_sitemap = []
   @site = Site.find(params[:id])
+  @site.last_crawl = Time.now
+  @site.last_crawl_mode = "sitemap"
+  @site.save
   # construction de l'url du sitemap
   if @site.url.end_with?("/")
     url = @site.url + "sitemap.xml"
@@ -436,9 +389,6 @@ def sitemap
       check_canonical(page.id)
       check_div(page.id)
     end
-    @site.last_crawl = DateTime.now
-    @site.last_crawl_mode = "sitemap"
-    @site.save
     redirect_to site_path(@site.id), notice: "url sitemap crawlé avec succès"
 end
 

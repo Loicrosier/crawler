@@ -13,8 +13,8 @@
 
 
                 <% if site.last_crawl.present? %>
-                  <strong class='strong-site-index' >DERNIER CRAWL LE: <%= site.last_crawl %></strong>
-                <% else %>
+                    <strong class='strong-site-index' >DERNIER CRAWL LE: <%= site.last_crawl %></strong>
+                <%else%>
                     <strong class='strong-site-index' >DERNIER CRAWL LE: Pas encore crawler </strong>
                 <% end %>
 
