@@ -318,10 +318,9 @@ def get_links_sitemap(site)
       if check_sitemap_link(site) == 'good'
         #### travail xml #####
         document = Nokogiri::XML(URI.open(site))
-
         # si les liens sont normaux
        document.to_s.scan(/<loc>(.*?)<\/loc>/).each do |url_in|
-            if url_in[0].start_with?("h") && url_in[0].end_with?(".html")
+            if url_in[0].start_with?(site) && url_in[0].end_with?(".html")
               link_sitemap << url_in[0]
             end
             # si les liens recu commence par <CDATA ext
