@@ -164,7 +164,7 @@ class SitesController < ApplicationController
   def check_canonical(id)
     page = Page.find_by(id: id)
     doc = Nokogiri::HTML(URI.open(page.url))
-    if doc.css('link[rel="canonical"]').nil?
+    if doc.css('link[rel="canonical"]').size < 1
       Seoerror.create(page_id: page.id, text: "pas de canonical")
     end
   end
@@ -204,9 +204,9 @@ class SitesController < ApplicationController
     page = Page.find_by(id: id)
     doc = Nokogiri::HTML(URI.open(page.url))
     div_count = 0
-    tmp = doc.search("//div")
-    if (tmp != nil)
-      total_doc = tmp[0].to_s
+    doc = doc.search("//div")
+    if (doc != nil)
+      total_doc = doc[0].to_s
     begin
       div_count = div_count + total_doc.scan(/<div/).count
       div_count = div_count - total_doc.scan(/div>/).count + total_doc.scan(/<div>/).count

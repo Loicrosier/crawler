@@ -15,14 +15,14 @@
                 <% if site.last_crawl.present? %>
                     <strong class='strong-site-index' >DERNIER CRAWL LE: <%= site.last_crawl %></strong>
                 <%else%>
-                    <strong class='strong-site-index' >DERNIER CRAWL LE: Pas encore crawler </strong>
+                    <strong class='strong-site-index' > Pas encore crawler </strong>
                 <% end %>
 
 
                 <% if !site.last_crawl_mode.nil? %>
-                  <strong class='strong-site-index' >DERNIER CRAWL LE: <%= site.last_crawl_mode %></strong>
+                  <strong class='strong-site-index' >DERNIER CRAWL EN MODE: <%= site.last_crawl_mode %></strong>
                 <% else %>
-                  <strong class='strong-site-index' >DERNIER CRAWL MODE: Pas encore crawler </strong>
+                  <strong class='strong-site-index' > Pas encore crawler </strong>
                 <% end %>
 
             </div>

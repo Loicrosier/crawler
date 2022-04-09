@@ -17,13 +17,13 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  encoding: utf8
-  username: seo
-  reconnect: false
-  database: seo
-  pool: 5
-  password: stotrw3V
-  host: localhost
+  # encoding: utf8
+  # username: seo
+  # reconnect: false
+  # database: seo
+  # pool: 5
+  # password: stotrw3V
+  # host: localhost
   # For details on connection pooling, see Rails configuration guide
   # https://guides.rubyonrails.org/configuring.html#database-pooling
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
