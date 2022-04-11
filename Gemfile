@@ -37,7 +37,7 @@ gem 'mechanize', '~> 2.7', '>= 2.7.5'
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
-  gem 'capistrano', '~> 3.0.0'
+  gem 'capistrano', '~> 3.14'
   gem 'capistrano-rails'
   gem 'capistrano-rvm'
   gem 'capistrano3-puma'

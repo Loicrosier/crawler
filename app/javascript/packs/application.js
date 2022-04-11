@@ -16,6 +16,7 @@ ActiveStorage.start()
 
 
 import { printScreen } from "../controller/printscreen";
+import { compteRendu } from "../controller/compte_rendu";
 
 
 
@@ -26,6 +27,7 @@ document.addEventListener('turbolinks:load', () => {
 
   // Call your functions here, e.g:
 printScreen()
+compteRendu()
 
 
   // disable pinch-zoom on smartphone -------------------------

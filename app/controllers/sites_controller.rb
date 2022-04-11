@@ -74,7 +74,7 @@ class SitesController < ApplicationController
   def check_meta_description(id)
     page = Page.find_by(id: id)
 
-    if !page.meta_description.blank? # si blanc alors pas de meta description
+    if !page.meta_description == "" # si blanc alors pas de meta description
       if page.meta_description.size > 150
         Seoerror.create(page_id: page.id, text: "meta trop long")
       elsif page.meta_description.size < 70
@@ -174,29 +174,19 @@ class SitesController < ApplicationController
       page = Page.find_by(id: id)
       doc = Nokogiri::HTML(URI.open(page.url))
       doc.css('a').each do |link|
-        if link[:href].include?('_')
-          Seoerror.create(page_id: page.id, text: "lien avec underscore (#{link[:href]})")
-        end
-
-        doc.css('img').each do |img|
-          if img[:href].include?('_')
-            Seoerror.create(page_id: page.id, text: "lien image avec underscore (#{img[:src]})")
+          if !link[:href].nil?
+            if link[:href].include?('_')
+              Seoerror.create(page_id: page.id, text: "lien avec underscore (#{link[:href]})")
+            end
           end
+      end
+
+      doc.css('img').each do |link|
+        if link[:src].include?('_')
+          Seoerror.create( ligne: link.line, page_id: page.id, text: "image avec underscore #{link[:src]}")
         end
       end
 
-      ## check des nofollow external
-      doc.css('a').each do |a|
-        begin
-          dst = URI.parse(URI.encode(a['href'].to_s))
-          rescue
-            Seoerror.create(ligne: a.line, text: "pas de nofollow", page_id: page.id )
-            next
-          end
-          if (!(a["href"].start_with? "./") && !(dst.to_s.include? hst.to_s) && !(dst.host.nil?)) && (!a["rel"] || !a["rel"].include?("nofollow"))
-            Seoerror.create(page_id: page.id, text: "lien externe avec rel nofollow (#{a["href"]})", ligne: a.line)
-          end
-      end
 
   end
 ###############################################################################
@@ -276,7 +266,10 @@ class SitesController < ApplicationController
       check_img(page.id)
       check_canonical(page.id)
       check_div(page.id)
+      check_url(page.id)
     end
+    @site.page_count_crawl = @pages.count
+    @site.save
     redirect_to site_path(@site), notice: "Site crawlé avec succès"
 
   end
@@ -387,7 +380,10 @@ def sitemap
       check_img(page.id)
       check_canonical(page.id)
       check_div(page.id)
+      check_url(page.id)
     end
+    @site.page_count_sitemap = @pages.count
+    @site.save
     redirect_to site_path(@site.id), notice: "url sitemap crawlé avec succès"
 end
 

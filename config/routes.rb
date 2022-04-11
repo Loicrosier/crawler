@@ -12,6 +12,7 @@ Rails.application.routes.draw do
 
 
   get 'page/:id', to: 'pages#show', as: 'page'
+  get 'compte_rendu/:id', to: 'pages#compte_rendu', as: 'compte_rendu'
 
   get 'sitemap/:id', to: 'sites#sitemap', as: 'sitemap'
   # create routes for sitemap.xml
