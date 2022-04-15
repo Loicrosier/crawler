@@ -6,9 +6,10 @@ class PagesController < ApplicationController
         @errors = []
         @page.hxerrors.each do |hxerror|
           @errors << hxerror.text
+          # @errors << hxerror.ligne
         end
         @page.seoerrors.each do |seoerror|
-          @errors << seoerror.text
+          @errors << seoerror.text + " (ligne " + seoerror.ligne.to_s + ")" unless seoerror.ligne.nil?
         end
   end
 

@@ -32,7 +32,8 @@ gem 'bootsnap', '>= 1.4.4', require: false
 gem 'simple_form'
 gem 'anemone', '~> 0.7.2'
 gem 'mechanize', '~> 2.7', '>= 2.7.5'
-
+gem 'ed25519'
+gem 'bcrypt_pbkdf'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

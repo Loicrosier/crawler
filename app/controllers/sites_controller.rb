@@ -73,16 +73,19 @@ class SitesController < ApplicationController
 ###############################################################################
   def check_meta_description(id)
     page = Page.find_by(id: id)
+    doc = Nokogiri::HTML(URI.open(page.url))
+    meta_desc = doc.css('meta[name="description"]')
 
-    if !page.meta_description == "" # si blanc alors pas de meta description
-      if page.meta_description.size > 150
-        Seoerror.create(page_id: page.id, text: "meta trop long")
-      elsif page.meta_description.size < 70
-        Seoerror.create(page_id: page.id, text: "meta trop court")
+      if meta_desc.empty? != true
+        if meta_desc.first['content'].size > 150
+          Seoerror.create(page_id: page.id, text: "meta description trop long (+150 char)")
+        end
+        if meta_desc.first['content'].size < 70
+          Seoerror.create(page_id: page.id, text: "meta description trop courte")
+        end
+      else # si le tableau est vide
+        Seoerror.create(page_id: page.id, text: "pas de meta description")
       end
-    else # pas de meta description
-      Seoerror.create(page_id: page.id, text: "pas de meta description")
-    end
   end
 
   ###############################################################################
@@ -153,9 +156,9 @@ class SitesController < ApplicationController
     doc = Nokogiri::HTML(URI.open(page.url))
     doc.css('img').each do |img|
       if img[:alt].nil?
-        Seoerror.create(page_id: page.id, text: "pas d'alt sur l'image( #{img[:href]}")
+        Seoerror.create(page_id: page.id, text: "pas d'alt sur l'image( #{img[:href]}", ligne: img.line)
       elsif img[:alt].size > 100
-        Seoerror.create(page_id: page.id, text: "alt de l'image trop longue ")
+        Seoerror.create(page_id: page.id, text: "alt de l'image trop longue ", ligne: img.line)
       end
     end
   end
@@ -244,11 +247,11 @@ class SitesController < ApplicationController
     url = @site.url
     lien = get_urls(url)
     # iterer sur chaque lien pour cree les pages du site
+     Page.where(site_id: @site.id).destroy_all
     lien.each do |link|
       if link.start_with?('./')
         link = url + link.gsub!('./', '/')
       end
-      Page.where(url: link).destroy_all
       next if check_sitemap_link(link) != 'good'
        doc = Nokogiri::HTML(URI.open(link))
       meta_desc = doc.css('meta[name="description"]').text
@@ -362,8 +365,8 @@ def sitemap
 
     lien_sitemap.uniq!
 
+    Page.where(site_id: @site.id).destroy_all
   lien_sitemap.flatten.each do |lien|
-      Page.where(url: lien).destroy_all
       doc = Nokogiri::HTML(URI.open(lien))
       meta_desc = doc.css('meta[name="description"]').text
       Page.create(url: lien, site_id: @site.id, content: doc.content.to_s, meta_description: meta_desc)
