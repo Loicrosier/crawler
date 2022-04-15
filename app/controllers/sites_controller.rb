@@ -63,8 +63,8 @@ class SitesController < ApplicationController
     page = Page.find_by(id: id)
     doc = Nokogiri::HTML(URI.open(page.url))
     if !doc.title.nil?
-      if doc.title.size > 60
-        Seoerror.create(page_id: page.id, text: "meta title trop long (+60 char)")
+      if doc.title.size > 65
+        Seoerror.create(page_id: page.id, text: "meta title trop long (+65 char)")
       end
     else
       Seoerror.create(page_id: page.id, text: "pas de meta title")
@@ -77,11 +77,11 @@ class SitesController < ApplicationController
     meta_desc = doc.css('meta[name="description"]')
 
       if meta_desc.empty? != true
-        if meta_desc.first['content'].size > 150
-          Seoerror.create(page_id: page.id, text: "meta description trop long (+150 char)")
+        if meta_desc.first['content'].size > 155
+          Seoerror.create(page_id: page.id, text: "meta description trop longue (+155 char)")
         end
         if meta_desc.first['content'].size < 70
-          Seoerror.create(page_id: page.id, text: "meta description trop courte")
+          Seoerror.create(page_id: page.id, text: "meta description trop courte (-70 char)")
         end
       else # si le tableau est vide
         Seoerror.create(page_id: page.id, text: "pas de meta description")
@@ -106,10 +106,10 @@ class SitesController < ApplicationController
     page = Page.find_by(id: page)
     doc = Nokogiri::HTML(URI.open(url))
     if doc.css('h1').size > 0
-      title << "H1" + doc.search('h1').text
+      title << doc.search('h1').text
     end
     if doc.css('h2').size > 0
-      title << "H2" + doc.search('h2').text
+      title << doc.search('h2').text
     end
     if doc.css('h3').size > 0
     title << doc.search('h3').text
@@ -125,7 +125,7 @@ class SitesController < ApplicationController
     end
     # verif balise h1 double
     if doc.css('h1').size > 1
-      Seoerror.create(page_id: page.id, text: "h1 double")
+      Seoerror.create(page_id: page.id, text: "h1 double", ligne: doc.css('h1').each { |h1| h1.line })
     end
 
    # verif titre doublon
@@ -134,17 +134,17 @@ class SitesController < ApplicationController
     # verif taille
     title.each do |t|
       if t.length > 70
-        Hxerror.create(page_id: page.id, text: "HX trop long")
+        Hxerror.create(page_id: page.id, text: "HX avec trop de char (+70) #{t}")
       end
       # verif si la taille des mots dans le titre es plus grand que 4
       if t.scan(/\w+/).size < 4
 
-       Hxerror.create(page_id: page.id, text: "titres qui ont moins de 4 mots")
+       Hxerror.create(page_id: page.id, text: "titres qui ont moins de 4 mots #{t}")
       end
       # verif si le titre est trop court
       if t.size < 30
         error_title_count += 1
-        Hxerror.create(page_id: page.id, text: "nombre de Titre trop court: #{error_title_count} (-de 30 Char)")
+        Hxerror.create(page_id: page.id, text: "titres moins de 30 Char #{t}")
       end
     end
   end

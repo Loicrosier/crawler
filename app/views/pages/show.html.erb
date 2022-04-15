@@ -11,10 +11,10 @@
       <% end %>
 
   <%# check meta title si trop long %>
-      <% if @errors.include?("meta title trop long (+60 char)") %>
-          <p class='erreur'>meta title trop long (+60 char)</p>
+      <% if @errors.include?('meta title trop long (+65 char)')%>
+          <p class='erreur'>meta title trop long (+65 char)</p>
         <% else %>
-          <p class='pas-derreur'>meta title trop long (+60 char)</p>
+          <p class='pas-derreur'>meta title trop long (+65 char)</p>
         <% end %>
 
   <%# ##### meta description check %>
@@ -27,18 +27,18 @@
         <% end %>
 
         <%# check meta description si trop courte %>
-        <% if @errors.include?('meta trop court') %>
-            <p class="erreur">meta trop courte</p>
+        <% if @errors.include?('meta description trop courte (-70 char)') %>
+            <p class="erreur">meta description trop courte (-70 char)</p>
           <% else %>
-            <p class="pas-derreur">meta trop courte</p>
+            <p class="pas-derreur">meta description trop courte (-70 char)</p>
         <% end %>
 
         <%# check meta description taille es trop grande ou pas %>
 
-        <% if @errors.include?("meta description trop long (+160 char)") %>
-          <p class='erreur'>meta description trop long (+160 char)</p>
+        <% if @errors.include?("meta description trop longue (+155 char)") %>
+          <p class='erreur'>meta description trop long (+155 char)</p>
         <% else %>
-          <p class='pas-derreur'>meta description trop long (+160 char)</p>
+          <p class='pas-derreur'>meta description trop long (+155 char)</p>
         <% end %>
 
     <%# check title (les h) %>
@@ -53,15 +53,15 @@
 
         <%# check si il y a des titres identiques %>
 
-        <% if @errors.include?('doublon:') %>
-          <p class="erreur">titre identique</p>
+        <% if @errors.to_s.scan(/doublon:/).count >= 1 %>
+          <p class="erreur">il y a des titres duplicate </p>
         <% else %>
-          <p class="pas-derreur">titre identique</p>
+          <p class="pas-derreur">il y a des titres duplicate</p>
         <% end %>
 
         <%# check tailles du nombre de mot du titre trop petit %>
 
-        <% if @errors.include?('titres qui ont moins de 4 mots') %>
+        <% if @errors.to_s.scan(/titres qui ont moins de 4 mots/).count >= 1 %>
           <p class="erreur">il y a un ou plusieurs titres qui ont moins de 4 mots</p>
         <% else %>
           <p class="pas-derreur">il y a un ou plusieurs titres qui ont moins de 4 mots</p>
@@ -69,17 +69,17 @@
 
       <%# check de la tailles si trop long %>
 
-        <% if @errors.include?('HX trop long') %>
-          <p class="erreur"> il y un ou plusieurs titres trop long </p>
+        <% if @errors.to_s.scan(/HX avec trop de char/).count >= 1 %>
+          <p class="erreur"> il y un ou plusieurs titres trop long (+70 char)</p>
         <% else %>
-          <p class="pas-derreur"> il y un ou plusieurs titres trop long </p>
+          <p class="pas-derreur"> il y un ou plusieurs titres trop long (+70 char)</p>
         <% end %>
 
         <%# check nombre de characteres trop court des titres %>
-        <% if @errors.include?('nombre de Titre trop court:') %>
-          <p class="erreur"> il y un ou plusieurs titres qui ont moins de 30 charactères </p>
+        <% if @errors.to_s.scan(/titres moins de 30 Char/).count >= 1 %>
+          <p class="erreur"> il y un ou plusieurs titres trop court (-30 char) </p>
         <% else %>
-          <p class="pas-derreur"> il y un ou plusieurs titres qui ont moins de 30 charactères </p>
+          <p class="pas-derreur"> il y un ou plusieurs titres trop court (-30 char) </p>
         <% end %>
 
     <%# CHECK DES IMG %>
@@ -105,16 +105,16 @@
         <%# check si il y a un lien canonique %>
 
          <% if @errors.include?('pas de canonical') %>
-          <p class="erreur"> lien canonical </p>
+          <p class="erreur">pas lien canonical </p>
         <% else %>
-          <p class="pas-derreur"> lien canonical </p>
+          <p class="pas-derreur">pas lien canonical </p>
         <% end %>
 
         <%# Partie check des urls %>
 
         <%# check si il y a des url avec underscore %>
 
-        <% if @errors.include?('lien avec underscore') %>
+        <% if @errors.to_s.scan(/lien avec underscore/).count >= 1 %>
           <p class="erreur"> il y a un ou plusieurs lien avec underscore </p>
         <% else %>
           <p class="pas-derreur"> il y a un ou plusieurs lien avec underscore </p>
@@ -122,7 +122,7 @@
 
         <%# check si il y a des url d'image avec underscore %>
 
-        <% if @errors.include?('image avec underscore') %>
+        <% if @errors.to_s.scan(/image avec underscore/).count >= 1 %>
           <p class="erreur"> il y a un ou plusieurs lien d'image avec underscore </p>
         <% else %>
           <p class="pas-derreur"> il y a un ou plusieurs lien d'image avec underscore </p>
