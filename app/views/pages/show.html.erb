@@ -1,5 +1,13 @@
 
-<%= @errors %>
+<%####################### div erreur détailler ################################### %>
+<div class="erreur-detaillé">
+  <h1>Détailler</h1>
+  <% @errors.each do |error| %>
+    <p><%= error %></p>
+  <% end %>
+</div>
+
+<%# ############################################################################# %>
 <div class="container-error">
 <% if @errors.count > 0 %>
   <div class="errors">
@@ -11,10 +19,10 @@
       <% end %>
 
   <%# check meta title si trop long %>
-      <% if @errors.include?('meta title trop long (+65 char)')%>
-          <p class='erreur'>meta title trop long (+65 char)</p>
+      <% if @errors.include?('meta title trop long (+55 char)')%>
+          <p class='erreur'>meta title trop long (+55 char)</p>
         <% else %>
-          <p class='pas-derreur'>meta title trop long (+65 char)</p>
+          <p class='pas-derreur'>meta title trop long (+55 char)</p>
         <% end %>
 
   <%# ##### meta description check %>
@@ -86,7 +94,7 @@
 
         <%#  check si alt des images presente %>
 
-        <% if @errors.include?("pas d'alt sur l'image(") %>
+        <% if @errors.to_s.scan(/pas d'alt sur l'image/).count >= 1 %>
           <p class="erreur"> il y a un ou plusieurs images sans alt </p>
         <% else %>
           <p class="pas-derreur"> il y a un ou plusieurs images sans alt </p>
@@ -94,7 +102,7 @@
 
         <%# check si alt de l'image est trop grande %>
 
-        <% if @errors.include?("alt de l'image trop longue") %>
+        <% if @errors.to_s.scan(/alt de l'image trop longue/).count >= 1 %>
           <p class="erreur"> il y a un ou plusieurs images avec alt trop longue </p>
         <% else %>
           <p class="pas-derreur"> il y a un ou plusieurs images avec alt trop longue </p>
@@ -155,5 +163,4 @@
 
   <% end  %> <%# end di si erreurs sup a 0%>
 
-        <div class="compte-rendu" data-page= <%= @page.id %>>voir</div>
 </div>

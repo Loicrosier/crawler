@@ -63,8 +63,8 @@ class SitesController < ApplicationController
     page = Page.find_by(id: id)
     doc = Nokogiri::HTML(URI.open(page.url))
     if !doc.title.nil?
-      if doc.title.size > 65
-        Seoerror.create(page_id: page.id, text: "meta title trop long (+65 char)")
+      if doc.title.size > 55
+        Seoerror.create(page_id: page.id, text: "meta title trop long (+55 char)")
       end
     else
       Seoerror.create(page_id: page.id, text: "pas de meta title")
@@ -134,17 +134,17 @@ class SitesController < ApplicationController
     # verif taille
     title.each do |t|
       if t.length > 70
-        Hxerror.create(page_id: page.id, text: "HX avec trop de char (+70) #{t}")
+        Hxerror.create(page_id: page.id, text: "HX avec trop de char (+70): #{t}")
       end
       # verif si la taille des mots dans le titre es plus grand que 4
       if t.scan(/\w+/).size < 4
 
-       Hxerror.create(page_id: page.id, text: "titres qui ont moins de 4 mots #{t}")
+       Hxerror.create(page_id: page.id, text: "titres qui ont moins de 4 mots:  #{t}")
       end
       # verif si le titre est trop court
       if t.size < 30
         error_title_count += 1
-        Hxerror.create(page_id: page.id, text: "titres moins de 30 Char #{t}")
+        Hxerror.create(page_id: page.id, text: "titres moins de 30 Char:  #{t}")
       end
     end
   end
@@ -156,9 +156,9 @@ class SitesController < ApplicationController
     doc = Nokogiri::HTML(URI.open(page.url))
     doc.css('img').each do |img|
       if img[:alt].nil?
-        Seoerror.create(page_id: page.id, text: "pas d'alt sur l'image( #{img[:href]}", ligne: img.line)
+        Seoerror.create(page_id: page.id, text: "pas d'alt sur l'image( #{img[:href]}, ligne: #{img.line}")
       elsif img[:alt].size > 100
-        Seoerror.create(page_id: page.id, text: "alt de l'image trop longue ", ligne: img.line)
+        Seoerror.create(page_id: page.id, text: "alt de l'image trop longue #{img[:alt]}, ligne: #{img.line}")
       end
     end
   end
@@ -259,6 +259,9 @@ class SitesController < ApplicationController
     end
     # recup des pages du site
     @pages = Page.where(site_id: @site.id)
+    # save du nombre de page crawlé
+    @site.page_count_crawl = @pages.count
+    @site.save
 
     @pages.each do |page|
       page.seoerrors.destroy_all
@@ -271,8 +274,6 @@ class SitesController < ApplicationController
       check_div(page.id)
       check_url(page.id)
     end
-    @site.page_count_crawl = @pages.count
-    @site.save
     redirect_to site_path(@site), notice: "Site crawlé avec succès"
 
   end
@@ -373,6 +374,9 @@ def sitemap
   end
 
     @pages = Page.where(site_id: @site.id)
+    # save nombre page crawlé avec sitemap
+    @site.page_count_sitemap = @pages.count
+    @site.save
 
     @pages.each do |page|
       page.seoerrors.destroy_all
@@ -385,8 +389,6 @@ def sitemap
       check_div(page.id)
       check_url(page.id)
     end
-    @site.page_count_sitemap = @pages.count
-    @site.save
     redirect_to site_path(@site.id), notice: "url sitemap crawlé avec succès"
 end
 

@@ -9,6 +9,16 @@
   flex-direction: inline-flex;
 }
 
+.erreur-detaillé {
+  position: absolute;
+  padding-top: 3%;
+  top: 20%;
+  left: 50%;
+  height: 500px;
+  width: 750px;
+  margin: 0 auto;
+  color: rgb(99, 99, 99);
+}
 
 
 .container-error {
@@ -19,14 +29,15 @@
   background-color: rgba(21, 21, 21, 0.919);
   border-radius: 0.25rem;
   margin-bottom: 1rem;
-  text-align: center;
+  text-align: left;
   align-items: center;
-  justify-content: center;
+  justify-content: left;
 
  }
 
  .errors {
    margin-top: 20px;
+   margin-left: 100px;
    padding: 10px;
    background-color: rgba(38, 38, 38, 0.925);
    border-radius: 8px;
