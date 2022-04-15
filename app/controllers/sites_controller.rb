@@ -63,7 +63,7 @@ class SitesController < ApplicationController
     page = Page.find_by(id: id)
     doc = Nokogiri::HTML(URI.open(page.url))
     if !doc.title.nil?
-      if doc.title.size > 55
+      if decode_utf(doc.title).size > 55
         Seoerror.create(page_id: page.id, text: "meta title trop long (+55 char)")
       end
     else
@@ -75,12 +75,13 @@ class SitesController < ApplicationController
     page = Page.find_by(id: id)
     doc = Nokogiri::HTML(URI.open(page.url))
     meta_desc = doc.css('meta[name="description"]')
+    meta_desc_decoder = decode_utf(meta_desc.first['content'])
 
-      if meta_desc.empty? != true
-        if meta_desc.first['content'].size > 155
+      if meta_desc_decoder.empty? != true
+        if meta_desc_decoder.size > 155
           Seoerror.create(page_id: page.id, text: "meta description trop longue (+155 char)")
         end
-        if meta_desc.first['content'].size < 70
+        if meta_desc_decoder.size < 70
           Seoerror.create(page_id: page.id, text: "meta description trop courte (-70 char)")
         end
       else # si le tableau est vide
@@ -98,6 +99,27 @@ class SitesController < ApplicationController
     end
   end
 
+  ###############################################################################
+  # fonction pour remettre les mots a la normal
+  def decode_utf(mot)
+  mot.gsub!("Ã©", "é")
+  mot.gsub!("Ã¨", "è")
+  mot.gsub!("Ãª", "ê")
+  mot.gsub!("Ã«", "ë")
+  mot.gsub!("Ã¢", "â")
+  mot.gsub!("Ã§", "ç")
+  mot.gsub!("Ã®", "î")
+  mot.gsub!("Ã´", "ô")
+  mot.gsub!("Ã¹", "ù")
+  mot.gsub!("Ã¼", "ü")
+  mot.gsub!("Ã»", "û")
+  mot.gsub!("Ã¤", "ä")
+  mot.gsub!("Ã¶", "ö")
+  mot.gsub!("Â°", "°")
+  mot.gsub!("Ã", "É")
+  return mot
+end
+
 ###############################################################################
   def check_title(url, page)
     # ( page = id de la page )
@@ -106,22 +128,22 @@ class SitesController < ApplicationController
     page = Page.find_by(id: page)
     doc = Nokogiri::HTML(URI.open(url))
     if doc.css('h1').size > 0
-      title << doc.search('h1').text
+      title << decode_utf(doc.search('h1').text)
     end
     if doc.css('h2').size > 0
-      title << doc.search('h2').text
+      title << decode_utf(doc.search('h2').text)
     end
     if doc.css('h3').size > 0
-    title << doc.search('h3').text
+    title << decode_utf(doc.search('h3').text)
     end
     if doc.css('h4').size > 0
-      title << doc.search('h4').text
+      title << decode_utf(doc.search('h4').text)
     end
     if doc.css('h5').size > 0
-      title << doc.search('h5').text
+      title << decode_utf(doc.search('h5').text)
     end
     if doc.css('h6').size > 0
-      title << doc.search('h6').text
+      title << decode_utf(doc.search('h6').text)
     end
     # verif balise h1 double
     if doc.css('h1').size > 1
