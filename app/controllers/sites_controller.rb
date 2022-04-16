@@ -52,7 +52,7 @@ class SitesController < ApplicationController
 
           # trie du tableau des liens
           links.uniq!
-          links.reject! { |link| link.nil? || (!link.start_with?(site) && !link.start_with?("./")) }
+          links.reject! { |link| link.nil? || link.end_with?('.pdf') || (!link.start_with?(site) && !link.start_with?("./")) }
       end
 
       return links
@@ -75,9 +75,10 @@ class SitesController < ApplicationController
     page = Page.find_by(id: id)
     doc = Nokogiri::HTML(URI.open(page.url))
     meta_desc = doc.css('meta[name="description"]')
-    meta_desc_decoder = decode_utf(meta_desc.first['content'])
+    if !meta_desc.empty?
+      meta_desc_decoder = decode_utf(meta_desc.first['content'])
 
-      if meta_desc_decoder.empty? != true
+      if !meta_desc_decoder.empty?
         if meta_desc_decoder.size > 155
           Seoerror.create(page_id: page.id, text: "meta description trop longue (+155 char)")
         end
@@ -87,6 +88,8 @@ class SitesController < ApplicationController
       else # si le tableau est vide
         Seoerror.create(page_id: page.id, text: "pas de meta description")
       end
+
+    end
   end
 
   ###############################################################################
@@ -100,7 +103,7 @@ class SitesController < ApplicationController
   end
 
   ###############################################################################
-  # fonction pour remettre les mots a la normal
+  # fonction pour remettre les phrases a la normal
   def decode_utf(mot)
   mot.gsub!("Ã©", "é")
   mot.gsub!("Ã¨", "è")
@@ -117,6 +120,15 @@ class SitesController < ApplicationController
   mot.gsub!("Ã¶", "ö")
   mot.gsub!("Â°", "°")
   mot.gsub!("Ã", "É")
+  mot.gsub!("Ã", "È")
+  mot.gsub!("Ã", "Ê")
+  mot.gsub!("Ã«", "Ë")
+  mot.gsub!("Ã¢", "Â")
+  mot.gsub!("Ã®", "Î")
+  mot.gsub!("", "'")
+  mot.gsub!("â\u0082¬", "$")
+  mot.gsub!("Ã ", "à")
+  mot.gsub!("â\u0080\u0093", "-")
   return mot
 end
 
@@ -127,35 +139,34 @@ end
     title = []
     page = Page.find_by(id: page)
     doc = Nokogiri::HTML(URI.open(url))
-    if doc.css('h1').size > 0
-      title << decode_utf(doc.search('h1').text)
-    end
-    if doc.css('h2').size > 0
-      title << decode_utf(doc.search('h2').text)
-    end
-    if doc.css('h3').size > 0
-    title << decode_utf(doc.search('h3').text)
-    end
-    if doc.css('h4').size > 0
-      title << decode_utf(doc.search('h4').text)
-    end
-    if doc.css('h5').size > 0
-      title << decode_utf(doc.search('h5').text)
-    end
-    if doc.css('h6').size > 0
-      title << decode_utf(doc.search('h6').text)
-    end
+    doc.css('h1').each {|h1| title << "H1" + decode_utf(h1.text) }
+    doc.css('h2').each {|h2| title << "H2" + decode_utf(h2.text) }
+    doc.css('h3').each {|h3| title << "H3" + decode_utf(h3.text) }
+    doc.css('h4').each {|h4| title << "H4" + decode_utf(h4.text) }
+    doc.css('h5').each {|h5| title << "H5" + decode_utf(h5.text) }
+    doc.css('h6').each {|h6| title << "H6" + decode_utf(h6.text) }
+
+    # p title
     # verif balise h1 double
     if doc.css('h1').size > 1
-      Seoerror.create(page_id: page.id, text: "h1 double", ligne: doc.css('h1').each { |h1| h1.line })
+      Seoerror.create(page_id: page.id, text: "h1 double")
+    end
+    title_for_check = []
+    # title for check = (enleve les H1 ext devant pour compter le bon nombres de titres ext)
+    title.each do |word|
+      word.gsub!("H1", "") || word.gsub!("H2","")
+      word.gsub!("H3", "") || word.gsub!("H4", "")
+      word.gsub!("H5", "") || word.gsub!("H6", "")
+      title_for_check << word
     end
 
-   # verif titre doublon
-   check_word(title, page.id)
+    # verif titre doublon
+    check_word(title_for_check, page.id)
 
-    # verif taille
+    # les - 2 pour ne pas compter les H? devant
+
     title.each do |t|
-      if t.length > 70
+      if t.size - 2 > 70
         Hxerror.create(page_id: page.id, text: "HX avec trop de char (+70): #{t}")
       end
       # verif si la taille des mots dans le titre es plus grand que 4
@@ -164,7 +175,7 @@ end
        Hxerror.create(page_id: page.id, text: "titres qui ont moins de 4 mots:  #{t}")
       end
       # verif si le titre est trop court
-      if t.size < 30
+      if t.size - 2 < 30
         error_title_count += 1
         Hxerror.create(page_id: page.id, text: "titres moins de 30 Char:  #{t}")
       end
@@ -311,61 +322,69 @@ end
 
  ###########################################################################################
 # fonction pour recuperer les lien (fonction qui appelle les autres fonctions)
-def lunch_link_sitemap(url)
+def lunch_link_sitemap(url_sitemap, url_du_site)
       urls = []
-      if check_sitemap_link(url) == 'good'
-        urls << get_links_sitemap(url)
+      if check_sitemap_link(url_sitemap) == 'good'
+        urls << get_links_sitemap(url_sitemap, url_du_site)
       else
         # si la requete es pas bonne
         # et que l'url fini par page-sitemap.xml on remplace et reessaye
-        if url.end_with?("page-sitemap.xml")
-          good_url = url.gsub!("page-sitemap.xml","sitemap.xml")
-          urls << get_links_sitemap(good_url)
+        if url_sitemap.end_with?("sitemap.xml")
+          good_url = url_sitemap.gsub!("sitemap.xml", "page-sitemap.xml")
+          urls << get_links_sitemap(good_url, url_du_site)
         end
       end
-      return urls.flatten!
+  return urls.flatten!
 end
 
 
 
 # recupere les lien dans le xml en fonction de leur format
-def get_links_sitemap(site)
-  # site = url du site
-  # url_in = url dans le xml
-        link_sitemap = []
-        # verif si le lien de sitemap.xml existe sinon change
-      if check_sitemap_link(site) == 'good'
-        #### travail xml #####
-        document = Nokogiri::XML(URI.open(site))
-        # si les liens sont normaux
-       document.to_s.scan(/<loc>(.*?)<\/loc>/).each do |url_in|
-            if url_in[0].start_with?(site) && url_in[0].end_with?(".html")
-              link_sitemap << url_in[0]
+    def re_test(url_sitemap, url_du_site)
+      doc = Nokogiri::XML(URI.open(url_sitemap))
+      link_sitemap = []
+        doc.to_s.scan(/<loc>(.*?)<\/loc>/).each do |url_in|
+            if url_in.first.start_with?(url_du_site) && (url_in.first.end_with?("/") || url_in.first.end_with?('.html') )
+              link_sitemap << url_in.first
             end
-            # si les liens recu commence par <CDATA ext
-            if url_in[0].start_with?("<![CDATA[") && url_in[0].end_with?("]]>")
+
+            if url_in.first.start_with?("<![CDATA[") && url_in[0].end_with?("]]>")
               url = url_in[0].gsub!("<![CDATA[","")
               url = url.gsub!("]]>","")
-              link_sitemap << url
+              link_sitemap << url_in.first
             end
-            # verif si les liens du site map sont des xml change de chemin
-            if url_in[0].end_with?(".xml")
-            url_sitemap = site.gsub!("sitemap.xml","page-sitemap.xml")
-              if check_sitemap_link(url_sitemap) == 'good'
-                link_sitemap << get_links_sitemap(url_sitemap)
-              end
-            end
-        end
 
-      else # else du si la page sitemap n'est pas good
-        url_sitemap = site.gsub!("sitemap.xml","page-sitemap.xml")
-        if check_sitemap_link(url_sitemap) == 'good'
-          link_sitemap << get_links_sitemap(url_sitemap)
         end
+        return link_sitemap.flatten
+    end
+
+
+  def get_links_sitemap(url_sitemap, url_du_site)
+    link_sitemap = []
+    doc = Nokogiri::XML(URI.open(url_sitemap))
+    if doc.to_s.scan(/<loc>(.*?)<\/loc>/).first[0].end_with?(".xml")
+      url_sitemap.gsub!("sitemap.xml", "page-sitemap.xml")
+      if check_sitemap_link(url_sitemap) == 'good'
+        link_sitemap << re_test(url_sitemap, url_du_site)
       end
+    else
 
-    return link_sitemap
- end
+      doc.to_s.scan(/<loc>(.*?)<\/loc>/).each do |url_in|
+          if url_in.first.start_with?(url_du_site) && (url_in.first.end_with?("/") || url_in.first.end_with?('.html') )
+            link_sitemap << url_in.first
+          end
+
+          if url_in.first.start_with?("<![CDATA[") && url_in[0].end_with?("]]>")
+            url = url_in[0].gsub!("<![CDATA[","")
+            url = url.gsub!("]]>","")
+            link_sitemap << url_in.first
+          end
+
+      end
+    end
+
+    return link_sitemap.flatten
+  end
 
 ###############################################################################################
 
@@ -378,17 +397,17 @@ def sitemap
   @site.save
   # construction de l'url du sitemap
   if @site.url.end_with?("/")
-    url = @site.url + "sitemap.xml"
+    url_sitemap = @site.url + "sitemap.xml"
   else
-    url = @site.url + "/sitemap.xml"
+    url_sitemap = @site.url + "/sitemap.xml"
   end
 
   # recup les lien du sitemap
-    lien_sitemap << lunch_link_sitemap(url)
+    lien_sitemap << lunch_link_sitemap(url_sitemap, @site.url)
 
     lien_sitemap.uniq!
 
-    Page.where(site_id: @site.id).destroy_all
+  Page.where(site_id: @site.id).destroy_all
   lien_sitemap.flatten.each do |lien|
       doc = Nokogiri::HTML(URI.open(lien))
       meta_desc = doc.css('meta[name="description"]').text
