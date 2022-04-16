@@ -8,55 +8,49 @@ class SitesController < ApplicationController
   require 'anemone'
 
   # FONCTION pour recuperer les urls (crawl sans url sitemap)
-  def get_urls(site)
-  # site = url du site
-  links = []
-      if check_sitemap_link(site) != 'good'
-        # recupere les liens du site avec mechanize si Nokogiri error
+def get_urls(site)
 
-        # recupere les liens du site avec mechanize
-          agent = Mechanize.new
-          page = agent.get(site)
-          page.css("a").each { |link| links << link['href'] }
+ link_crawl = []
+  if check_sitemap_link(site) != 'good'
 
-          # recupere les liens du site avec Anemone
-          Anemone.crawl(site) do |anemone|
-            anemone.on_every_page do |page|
-              page.links.each do |link|
-                links << link.to_s
-              end
-            end
+    Anemone.crawl(site) do |anemone|
+      anemone.on_every_page do |page|
+        page.links.each do |link|
+          link_crawl << link.to_s
+        end
+      end
+    end
+    agent = Mechanize.new
+    page = agent.get(site)
+    page.css("a").each { |link| link_crawl << link['href'] }
+    else
+      doc = Nokogiri::HTML(URI.open(site))
+      doc.css('a').each do |link|
+        link_crawl << link[:href]
+      end
+      Anemone.crawl(site) do |anemone|
+        anemone.on_every_page do |page|
+          page.links.each do |link|
+            link_crawl << link.to_s
           end
-
-
-          links.uniq!
-          links.reject! { |link| link.nil? || (!link.start_with?(site) || !link.start_with?("./")) }
-      else # si le site est good avec nokogiri
-            # recupere les liens du site avec anemone
-          Anemone.crawl(site) do |anemone|
-            anemone.on_every_page do |page|
-                page.links.each do |link|
-                  links << link.to_s
-                end
-            end
-          end
-
-          # recupere les liens du site avec nokogiri
-          doc = Nokogiri::HTML(URI.open(site))
-          doc.css('a').each { |link| links << link['href'] }
-
-          # recupere les liens du site avec mechanize
-          agent = Mechanize.new
-          page = agent.get(site)
-          page.css("a").each { |link| links << link['href'] }
-
-          # trie du tableau des liens
-          links.uniq!
-          links.reject! { |link| link.nil? || link.end_with?('.pdf') || (!link.start_with?(site) && !link.start_with?("./")) }
+        end
       end
 
-      return links
+    agent = Mechanize.new
+    page = agent.get(site)
+    page.links.each do |link|
+      link_crawl << link.to_s
+    end
   end
+
+
+
+  link_crawl.uniq!
+  link_crawl.reject! { |link| link.nil? || (!link.start_with?(site) && !link.start_with?('./')) || link.end_with?('.pdf') }
+
+
+  return link_crawl
+end
 
   ###################################### TOUTES LES FONCTION CRAWL 1 55 A 202 ######################################################
   def check_meta_title(id)
@@ -64,7 +58,7 @@ class SitesController < ApplicationController
     doc = Nokogiri::HTML(URI.open(page.url))
     if !doc.title.nil?
       if decode_utf(doc.title).size > 55
-        Seoerror.create(page_id: page.id, text: "meta title trop long (+55 char)")
+        Seoerror.create(page_id: page.id, text: "meta title trop long (+55 char) : #{decode_utf(doc.title).size}")
       end
     else
       Seoerror.create(page_id: page.id, text: "pas de meta title")
@@ -80,10 +74,10 @@ class SitesController < ApplicationController
 
       if !meta_desc_decoder.empty?
         if meta_desc_decoder.size > 155
-          Seoerror.create(page_id: page.id, text: "meta description trop longue (+155 char)")
+          Seoerror.create(page_id: page.id, text: "meta description trop longue (+155 char) : #{meta_desc_decoder.size}")
         end
         if meta_desc_decoder.size < 70
-          Seoerror.create(page_id: page.id, text: "meta description trop courte (-70 char)")
+          Seoerror.create(page_id: page.id, text: "meta description trop courte (-70 char) : #{meta_desc_decoder.size}")
         end
       else # si le tableau est vide
         Seoerror.create(page_id: page.id, text: "pas de meta description")
@@ -95,8 +89,10 @@ class SitesController < ApplicationController
   ###############################################################################
   # fonction pour comparer 2mots dans un tableau
   def check_word(tableau, page_id)
+
     tableau.each do |mot|
-      if tableau.to_s.scan(/#{mot}/).count > 1
+
+      if tableau.to_s.scan(/#{mot.gsub(mot[0..1], "")}/).count > 1
         Hxerror.create(page_id: page_id, text: "doublon: #{mot}")
       end
     end
@@ -151,17 +147,16 @@ end
     if doc.css('h1').size > 1
       Seoerror.create(page_id: page.id, text: "h1 double")
     end
-    title_for_check = []
     # title for check = (enleve les H1 ext devant pour compter le bon nombres de titres ext)
-    title.each do |word|
-      word.gsub!("H1", "") || word.gsub!("H2","")
-      word.gsub!("H3", "") || word.gsub!("H4", "")
-      word.gsub!("H5", "") || word.gsub!("H6", "")
-      title_for_check << word
-    end
+    # title.each do |word|
+    #   word.gsub("H1", "") || word.gsub("H2","")
+    #   word.gsub("H3", "") || word.gsub("H4", "")
+    #   word.gsub("H5", "") || word.gsub("H6", "")
+    #   title_for_check << word
+    # end
 
     # verif titre doublon
-    check_word(title_for_check, page.id)
+    check_word(title, page.id)
 
     # les - 2 pour ne pas compter les H? devant
 
@@ -177,7 +172,7 @@ end
       # verif si le titre est trop court
       if t.size - 2 < 30
         error_title_count += 1
-        Hxerror.create(page_id: page.id, text: "titres moins de 30 Char:  #{t}")
+        Hxerror.create(page_id: page.id, text: "titres moins de 30 Char:  #{t} (taille: #{t.size - 2})")
       end
     end
   end

@@ -11,6 +11,7 @@ class PagesController < ApplicationController
         @page.seoerrors.each do |seoerror|
           @errors << seoerror.text
         end
+        @errors
   end
 
   def compte_rendu
