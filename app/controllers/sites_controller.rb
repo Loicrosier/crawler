@@ -57,8 +57,8 @@ end
     page = Page.find_by(id: id)
     doc = Nokogiri::HTML(URI.open(page.url))
     if !doc.title.nil?
-      if decode_utf(doc.title).size > 55
-        Seoerror.create(page_id: page.id, text: "meta title trop long (+55 char) : #{decode_utf(doc.title).size}")
+      if decode_utf(doc.title).size > 60
+        Seoerror.create(page_id: page.id, text: "meta title trop long (+60 char) : #{decode_utf(doc.title).size}")
       end
       if decode_utf(doc.title).size < 30
         Seoerror.create(page_id: page.id, text: "meta title trop court (-30 char) : #{decode_utf(doc.title).size}")
