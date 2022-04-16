@@ -60,6 +60,9 @@ end
       if decode_utf(doc.title).size > 55
         Seoerror.create(page_id: page.id, text: "meta title trop long (+55 char) : #{decode_utf(doc.title).size}")
       end
+      if decode_utf(doc.title).size < 30
+        Seoerror.create(page_id: page.id, text: "meta title trop court (-30 char) : #{decode_utf(doc.title).size}")
+      end
     else
       Seoerror.create(page_id: page.id, text: "pas de meta title")
     end
@@ -165,15 +168,12 @@ end
         Hxerror.create(page_id: page.id, text: "HX avec trop de char (+70): #{t}")
       end
       # verif si la taille des mots dans le titre es plus grand que 4
-      if t.scan(/\w+/).size < 4
 
-       Hxerror.create(page_id: page.id, text: "titres qui ont moins de 4 mots:  #{t}")
-      end
       # verif si le titre est trop court
-      if t.size - 2 < 30
-        error_title_count += 1
-        Hxerror.create(page_id: page.id, text: "titres moins de 30 Char:  #{t} (taille: #{t.size - 2})")
-      end
+      # if t.size - 2 < 30
+      #   error_title_count += 1
+      #   Hxerror.create(page_id: page.id, text: "titres moins de 30 Char:  #{t} (taille: #{t.size - 2})")
+      # end
     end
   end
   ############################################################
@@ -185,7 +185,7 @@ end
     doc.css('img').each do |img|
       if img[:alt].nil?
         Seoerror.create(page_id: page.id, text: "pas d'alt sur l'image( #{img[:href]}, ligne: #{img.line}")
-      elsif img[:alt].size > 100
+      elsif img[:alt].size > 125
         Seoerror.create(page_id: page.id, text: "alt de l'image trop longue #{img[:alt]}, ligne: #{img.line}")
       end
     end
