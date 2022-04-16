@@ -1,13 +1,4 @@
 
-<%####################### div erreur détailler ################################### %>
-<div class="erreur-detaillé">
-  <h1>Détailler</h1>
-  <% @errors.each do |error| %>
-    <p><%= error %></p>
-  <% end %>
-</div>
-
-<%# ############################################################################# %>
 <div class="container-error">
 <% if @errors.count > 0 %>
   <div class="errors">
@@ -17,13 +8,20 @@
         <% else %>
           <p class="pas-derreur">pas de meta title</p>
       <% end %>
+  <%# check meta title si trop court %>
+  <% if @errors.to_s.scan(/meta title trop court/).count >= 1 %>
+    <p class="erreur">meta title trop court (-30 char)</p>
+  <% else %>
+    <p class="pas-derreur">meta title trop court (-30 char)</p>
+  <% end %>
 
   <%# check meta title si trop long %>
-      <% if @errors.include?('meta title trop long (+55 char)')%>
+      <% if @errors.to_s.scan(/meta title trop long/).count >= 1 %>
           <p class='erreur'>meta title trop long (+55 char)</p>
         <% else %>
           <p class='pas-derreur'>meta title trop long (+55 char)</p>
         <% end %>
+
 
   <%# ##### meta description check %>
 
@@ -35,7 +33,7 @@
         <% end %>
 
         <%# check meta description si trop courte %>
-        <% if @errors.include?('meta description trop courte (-70 char)') %>
+        <% if @errors.to_s.scan(/meta description trop courte/).count >= 1 %>
             <p class="erreur">meta description trop courte (-70 char)</p>
           <% else %>
             <p class="pas-derreur">meta description trop courte (-70 char)</p>
@@ -43,7 +41,7 @@
 
         <%# check meta description taille es trop grande ou pas %>
 
-        <% if @errors.include?("meta description trop longue (+155 char)") %>
+        <% if @errors.to_s.scan(/meta description trop longue/).count >= 1 %>
           <p class='erreur'>meta description trop long (+155 char)</p>
         <% else %>
           <p class='pas-derreur'>meta description trop long (+155 char)</p>
@@ -54,9 +52,9 @@
         <%# check si il y a des balise h1 double %>
 
         <% if @errors.include?('h1 double') %>
-          <p class="erreur">balise H1 double</p>
+          <p class="erreur">il y a plusieurs balise H1</p>
         <% else %>
-          <p class="pas-derreur">balise H1 double</p>
+          <p class="pas-derreur">il y a plusieurs balise H1</p>
         <% end %>
 
         <%# check si il y a des titres identiques %>
@@ -67,27 +65,12 @@
           <p class="pas-derreur">il y a des titres duplicate</p>
         <% end %>
 
-        <%# check tailles du nombre de mot du titre trop petit %>
-
-        <% if @errors.to_s.scan(/titres qui ont moins de 4 mots/).count >= 1 %>
-          <p class="erreur">il y a un ou plusieurs titres qui ont moins de 4 mots</p>
-        <% else %>
-          <p class="pas-derreur">il y a un ou plusieurs titres qui ont moins de 4 mots</p>
-        <% end %>
-
       <%# check de la tailles si trop long %>
 
         <% if @errors.to_s.scan(/HX avec trop de char/).count >= 1 %>
           <p class="erreur"> il y un ou plusieurs titres trop long (+70 char)</p>
         <% else %>
           <p class="pas-derreur"> il y un ou plusieurs titres trop long (+70 char)</p>
-        <% end %>
-
-        <%# check nombre de characteres trop court des titres %>
-        <% if @errors.to_s.scan(/titres moins de 30 Char/).count >= 1 %>
-          <p class="erreur"> il y un ou plusieurs titres trop court (-30 char) </p>
-        <% else %>
-          <p class="pas-derreur"> il y un ou plusieurs titres trop court (-30 char) </p>
         <% end %>
 
     <%# CHECK DES IMG %>
@@ -103,9 +86,9 @@
         <%# check si alt de l'image est trop grande %>
 
         <% if @errors.to_s.scan(/alt de l'image trop longue/).count >= 1 %>
-          <p class="erreur"> il y a un ou plusieurs images avec alt trop longue </p>
+          <p class="erreur"> il y a un ou plusieurs images avec une alt trop longue (+125 char) </p>
         <% else %>
-          <p class="pas-derreur"> il y a un ou plusieurs images avec alt trop longue </p>
+          <p class="pas-derreur"> il y a un ou plusieurs images avec une alt trop longue (+125 char) </p>
         <% end %>
 
         <%# LIEN CANONICAL %>
@@ -113,9 +96,9 @@
         <%# check si il y a un lien canonique %>
 
          <% if @errors.include?('pas de canonical') %>
-          <p class="erreur">pas lien canonical </p>
+          <p class="erreur">pas de lien canonical </p>
         <% else %>
-          <p class="pas-derreur">pas lien canonical </p>
+          <p class="pas-derreur">pas de lien canonical </p>
         <% end %>
 
         <%# Partie check des urls %>
@@ -164,3 +147,13 @@
   <% end  %> <%# end di si erreurs sup a 0%>
 
 </div>
+
+<%####################### div erreur détailler ################################### %>
+<div class="erreur-detaillé">
+  <h1>Détailler</h1>
+  <% @errors.each do |error| %>
+    <p><%= error %></p>
+  <% end %>
+</div>
+
+<%# ############################################################################# %>

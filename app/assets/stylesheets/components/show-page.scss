@@ -17,7 +17,7 @@
   height: 500px;
   width: 750px;
   margin: 0 auto;
-  color: rgb(99, 99, 99);
+  color: rgb(0, 0, 0);
 }
 
 
@@ -26,7 +26,7 @@
   margin-top: 10px;
   display: flex;
   padding: 1rem;
-  background-color: rgba(21, 21, 21, 0.919);
+  background-color: rgba(218, 218, 218, 0.919);
   border-radius: 0.25rem;
   margin-bottom: 1rem;
   text-align: left;
@@ -39,7 +39,7 @@
    margin-top: 20px;
    margin-left: 100px;
    padding: 10px;
-   background-color: rgba(38, 38, 38, 0.925);
+   background-color: rgba(200, 200, 200, 0.925);
    border-radius: 8px;
   //  display: flex;
    text-align: center;
@@ -51,6 +51,7 @@
 
  .erreur {
    color: red;
+   font-weight: bold;
  }
 
  .pas-derreur {
