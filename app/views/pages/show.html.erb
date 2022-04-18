@@ -59,7 +59,7 @@
 
         <%# check si il y a des titres identiques %>
 
-        <% if @errors.to_s.scan(/doublon:/).count >= 1 %>
+        <% if @errors.to_s.scan(/TITRES DUPLIQUER/).count >= 1 %>
           <p class="erreur">il y a des titres duplicate </p>
         <% else %>
           <p class="pas-derreur">il y a des titres duplicate</p>

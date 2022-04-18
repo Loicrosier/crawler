@@ -92,11 +92,9 @@ end
   ###############################################################################
   # fonction pour comparer 2mots dans un tableau
   def check_word(tableau, page_id)
-
     tableau.each do |mot|
-
-      if tableau.to_s.scan(/#{mot.gsub(mot[0..1], "")}/).count > 1
-        Hxerror.create(page_id: page_id, text: "doublon: #{mot}")
+      if tableau.count(mot) > 1
+        Hxerror.create(page_id: page_id, text: "TITRES DUPLIQUER : #{mot}")
       end
     end
   end
@@ -138,12 +136,12 @@ end
     title = []
     page = Page.find_by(id: page)
     doc = Nokogiri::HTML(URI.open(url))
-    doc.css('h1').each {|h1| title << "H1" + decode_utf(h1.text) }
-    doc.css('h2').each {|h2| title << "H2" + decode_utf(h2.text) }
-    doc.css('h3').each {|h3| title << "H3" + decode_utf(h3.text) }
-    doc.css('h4').each {|h4| title << "H4" + decode_utf(h4.text) }
-    doc.css('h5').each {|h5| title << "H5" + decode_utf(h5.text) }
-    doc.css('h6').each {|h6| title << "H6" + decode_utf(h6.text) }
+    doc.css('h1').each {|h1| title << "H1" + decode_utf(h1.text) } unless doc.css('h1').nil? || doc.css('h1') == ""
+    doc.css('h2').each {|h2| title << "H2" + decode_utf(h2.text) } unless doc.css('h2').nil? || doc.css('h2') == ""
+    doc.css('h3').each {|h3| title << "H3" + decode_utf(h3.text) } unless doc.css('h3').nil? || doc.css('h3') == ""
+    doc.css('h4').each {|h4| title << "H4" + decode_utf(h4.text) } unless doc.css('h4').nil? || doc.css('h4') == ""
+    doc.css('h5').each {|h5| title << "H5" + decode_utf(h5.text) } unless doc.css('h5').nil? || doc.css('h5') == ""
+    doc.css('h6').each {|h6| title << "H6" + decode_utf(h6.text) } unless doc.css('h6').nil? || doc.css('h6') == ""
 
     # p title
     # verif balise h1 double
