@@ -123,9 +123,11 @@ end
   mot.gsub!("Ã¢", "Â")
   mot.gsub!("Ã®", "Î")
   mot.gsub!("", "'")
+  mot.gsub!("'", " ")
   mot.gsub!("â\u0082¬", "$")
   mot.gsub!("Ã ", "à")
   mot.gsub!("â\u0080\u0093", "-")
+  mot.gsub!("â'", "'")
   return mot
 end
 
