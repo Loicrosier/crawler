@@ -24,8 +24,10 @@ def get_urls(site)
     page = agent.get(site)
     page.css("a").each { |link| link_crawl << link['href'] }
     else
+
       doc = Nokogiri::HTML(URI.open(site))
       doc.css('a').each do |link|
+        p link[:href]
         link_crawl << link[:href]
       end
       Anemone.crawl(site) do |anemone|
@@ -46,7 +48,7 @@ def get_urls(site)
 
 
   link_crawl.uniq!
-  link_crawl.reject! { |link| link.nil? || (!link.start_with?(site) && !link.start_with?('./')) || link.end_with?('.pdf') }
+  link_crawl.reject! { |link| link.nil? || !link.start_with?(site) || link.end_with?('.pdf') }
 
 
   return link_crawl
@@ -278,6 +280,10 @@ end
     lien = get_urls(url)
     # iterer sur chaque lien pour cree les pages du site
      Page.where(site_id: @site.id).destroy_all
+     # creation premiere page pour la page du site
+     if !lien.include?(@site.url)
+        Page.create(url: @site.url, site_id: @site.id)
+     end
     lien.each do |link|
       if link.start_with?('./')
         link = url + link.gsub!('./', '/')
