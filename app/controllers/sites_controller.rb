@@ -183,10 +183,12 @@ end
     page = Page.find_by(id: id)
     doc = Nokogiri::HTML(URI.open(page.url))
     doc.css('img').each do |img|
-      if img[:alt] == "" && img[:src].start_with?("https") || img[:src].start_with?("http")
-        Seoerror.create( page_id: page.id, text: "pas d'alt sur l'image : " + img[:src])
-      elsif img[:alt].size > 125
-        Seoerror.create( page_id: page.id, text: "alt de l'image trop longue sur: " + img[:src])
+      if img["data-lazy-src"].nil?
+        if img[:alt] == ""
+          Seoerror.create(page_id: page.id, text: "pas d'alt sur l'image #{img[:src]}")
+        elsif decode_utf(img[:alt]).size > 125
+          Seoerror.create(page_id: page.id, text: "alt de l'image trop longue sur: #{img[:src]}")
+        end
       end
     end
   end
