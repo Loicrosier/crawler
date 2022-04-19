@@ -142,6 +142,12 @@
         <% else %>
           <p class='pas-derreur'>Div pas fermée</p>
         <% end %>
+  <%# check si erreur d'ordonnancement %>
+      <% if @errors.to_s.scan(/ERREUR BALISE/).count >= 1 %>
+        <p class="erreur"> erreurs d'ordonnancement </p>
+      <% else %>
+        <p class="pas-derreur"> erreurs d'ordonnancement </p>
+      <% end %>
   </div>
 
   <% end  %> <%# end di si erreurs sup a 0%>
@@ -149,7 +155,7 @@
 </div>
 
 <%####################### div erreur détailler ################################### %>
-<div class="erreur-detaillé">
+<div class="erreur-detailler">
   <h1>Détailler</h1>
   <% @errors.each do |error| %>
     <p><%= error %></p>
