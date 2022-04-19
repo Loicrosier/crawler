@@ -135,11 +135,13 @@ end
     page = Page.find_by(id: id)
     doc = Nokogiri::HTML(URI.open(page.url))
     doc.css('img').each do |img|
-      if !img[:src].end_with?('.gif') && !img[:src].start_with?('data:')
-        if img[:alt] == ""
-          Seoerror.create(page_id: page.id, text: "pas d'alt sur l'image #{img[:src]}")
-        elsif Page::decode_utf(img[:alt]).size > 125
-          Seoerror.create(page_id: page.id, text: "alt de l'image trop longue sur: #{img[:src]}")
+      if !img['alt'].nil?
+        if !img[:src].end_with?('.gif') && !img[:src].start_with?('data:')
+          if img[:alt] == ""
+            Seoerror.create(page_id: page.id, text: "pas d'alt sur l'image #{img[:src]}")
+          elsif Page::decode_utf(img[:alt]).size > 125
+            Seoerror.create(page_id: page.id, text: "alt de l'image trop longue sur: #{img[:src]}")
+          end
         end
       end
     end

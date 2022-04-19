@@ -34,6 +34,10 @@ class Page < ApplicationRecord
   mot.gsub!("â\u0080\u0093", "-")
   mot.gsub!("â'", "'")
   mot.gsub!("â ", " ")
+  mot.gsub!("&Atilde;&copy;", "é")
+  mot.gsub!("&Atilde;&reg;", "®")
+  mot.gsub!("&Atilde;&trade;", "™")
+  mot.gsub!("&acirc;&#128;&#153;", "'")
   return mot
 end
 
@@ -63,8 +67,9 @@ end
         ligne_h2 = h2[h2.size - 3] + h2[h2.size - 2]
         balise_H1.each do |h1|
           ligne_h1 = h1[h1.size - 3] + h1[h1.size - 2]
+          p h1
           if ligne_h1.to_i > ligne_h2.to_i
-            Hxerror.create(page_id: page.id, text: "ERREUR BALISE H2 : #{decode_utf(h2)} DEVANT BALISE H1 #{decode_utf(h1)}")
+            Hxerror.create(page_id: page.id, text: "ERREUR BALISE H2 : #{decode_utf(h2.gsub(h2.last(12), ""))} DEVANT BALISE H1 #{decode_utf(h1.gsub(h1.last(12), ""))}")
           end
         end
       end
@@ -73,7 +78,7 @@ end
         balise_H2.each do |h2|
           ligne_h2 = h2[h2.size - 3] + h2[h2.size - 2]
           if ligne_h2.to_i > ligne_h3.to_i
-           Hxerror.create(page_id: page.id, text: "ERREUR BALISE H3 : #{decode_utf(h3)} DEVANT BALISE H2 #{decode_utf(h2)}")
+           Hxerror.create(page_id: page.id, text: "ERREUR BALISE H3 : #{decode_utf(h3.gsub(h3.last(12), ""))} DEVANT BALISE H2 #{decode_utf(h2.gsub(h2.last(12), ""))}")
           end
         end
       end
@@ -82,7 +87,7 @@ end
         balise_H3.each do |h3|
           ligne_h3 = h3[h3.size - 3] + h3[h3.size - 2]
           if ligne_h3.to_i > ligne_h4.to_i
-            Hxerror.create(page_id: page.id, text: "ERREUR BALISE H4 : #{decode_utf(h4)} DEVANT BALISE H3 #{decode_utf(h3)}")
+            Hxerror.create(page_id: page.id, text: "ERREUR BALISE H4 : #{decode_utf(h4.gsub(h4.last(12), ""))} DEVANT BALISE H3 #{decode_utf(h3.gsub(h3.last(12), ""))}")
           end
         end
       end
@@ -91,19 +96,19 @@ end
         balise_H4.each do |h4|
           ligne_h4 = h4[h4.size - 3] + h4[h4.size - 2]
           if ligne_h4.to_i > ligne_h5.to_i
-            Hxerror.create(page_id: page.id, text: "ERREUR BALISE H5 : #{decode_utf(h5)} DEVANT BALISE H4 #{decode_utf(h4)}")
+            Hxerror.create(page_id: page.id, text: "ERREUR BALISE H5 : #{decode_utf(h5.gsub(h2.last(12), ""))} DEVANT BALISE H4 #{decode_utf(h4.gsub(h4.last(12), ""))}")
           end
         end
       end
       balise_H6.each do |h6|
-        p ligne_h6 = h6[h6.size - 3] + h6[h6.size - 2]
+        ligne_h6 = h6[h6.size - 3] + h6[h6.size - 2]
         balise_H5.each do |h5|
           ligne_h5 = h5[h5.size - 3] + h5[h5.size - 2]
           if ligne_h5.to_i > ligne_h6.to_i
-            Hxerror.create(page_id: page.id, text: "ERREUR BALISE H6 : #{decode_utf(h6)} DEVANT BALISE H5 #{decode_utf(h5)}")
+            Hxerror.create(page_id: page.id, text: "ERREUR BALISE H6 : #{decode_utf(h6.gsub(h6.last(12), ""))} DEVANT BALISE H5 #{decode_utf(h5.gsub(h5.last(12), ""))}")
           end
         end
-    end
+      end
 
   end
 end
