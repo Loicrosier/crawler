@@ -247,7 +247,7 @@ end
     # recup des pages du site
     @pages = Page.where(site_id: @site.id)
     # save du nombre de page crawlé
-    @site.page_count_crawl = @pages.count
+    @site.page_count_crawl = @pages.size
     @site.save
 
     @pages.each do |page|
@@ -369,7 +369,7 @@ def sitemap
 
     @pages = Page.where(site_id: @site.id)
     # save nombre page crawlé avec sitemap
-    @site.page_count_sitemap = @pages.count
+    @site.page_count_sitemap = @pages.size
     @site.save
 
     @pages.each do |page|

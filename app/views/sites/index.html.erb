@@ -14,7 +14,7 @@
 
                 <% if site.last_crawl.present? %>
                     <strong class='strong-site-index' >DERNIER CRAWL LE: <%= site.last_crawl %></strong>
-                <%else%>
+                <% else %>
                     <strong class='strong-site-index' > Pas encore crawler </strong>
                 <% end %>
 
@@ -25,9 +25,13 @@
                   <strong class='strong-site-index' > Pas encore crawler </strong>
                 <% end %>
 
-                <%# if sitemap.page_count_crawl != nil && sitemap.page_count_sitemap != nil %>
-                  <%# "NOMBRE DE PAGE ORPHELINE: #{site.page_count_crawl - site.page_count_sitemap}" %>
-                <%# end %>
+                <% if !site.page_count_crawl.nil? && !site.page_count_sitemap.nil? %>
+                    <% if site.page_count_crawl > site.page_count_sitemap %>
+                      <strong class='strong-site-index'> "NOMBRE DE PAGE ORPHELINE: <%= site.page_count_crawl - site.page_count_sitemap %> </strong>
+                    <% elsif site.page_count_sitemap > site.page_count_crawl %>
+                      <strong class='strong-site-index'> "NOMBRE DE PAGE ORPHELINE: <%= site.page_count_sitemap - site.page_count_crawl %> </strong>
+                    <% end %>
+                <% end %>
 
             </div>
 
