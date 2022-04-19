@@ -27,7 +27,6 @@ def get_urls(site)
 
       doc = Nokogiri::HTML(URI.open(site))
       doc.css('a').each do |link|
-        p link[:href]
         link_crawl << link[:href]
       end
       Anemone.crawl(site) do |anemone|
@@ -46,9 +45,9 @@ def get_urls(site)
   end
 
 
-
-  link_crawl.uniq!
   link_crawl.reject! { |link| link.nil? || !link.start_with?(site) || link.end_with?('.pdf') }
+  link_crawl.each { |link| link.gsub!("%20", "") } # pour enlever les espaces (espaces dans les urls %20)
+  link_crawl.uniq!
 
 
   return link_crawl
@@ -59,11 +58,11 @@ end
     page = Page.find_by(id: id)
     doc = Nokogiri::HTML(URI.open(page.url))
     if !doc.title.nil?
-      if decode_utf(doc.title).size > 60
-        Seoerror.create(page_id: page.id, text: "meta title trop long (+60 char) : #{decode_utf(doc.title).size}")
+      if Page::decode_utf(doc.title).size > 60
+        Seoerror.create(page_id: page.id, text: "meta title trop long (+60 char) : #{Page::decode_utf(doc.title).size}")
       end
-      if decode_utf(doc.title).size < 30
-        Seoerror.create(page_id: page.id, text: "meta title trop court (-30 char) : #{decode_utf(doc.title).size}")
+      if Page::decode_utf(doc.title).size < 30
+        Seoerror.create(page_id: page.id, text: "meta title trop court (-30 char) : #{Page::decode_utf(doc.title).size}")
       end
     else
       Seoerror.create(page_id: page.id, text: "pas de meta title")
@@ -75,7 +74,7 @@ end
     doc = Nokogiri::HTML(URI.open(page.url))
     meta_desc = doc.css('meta[name="description"]')
     if !meta_desc.empty?
-      meta_desc_decoder = decode_utf(meta_desc.first['content'])
+      meta_desc_decoder = Page::decode_utf(meta_desc.first['content'])
 
       if !meta_desc_decoder.empty?
         if meta_desc_decoder.size > 155
@@ -102,80 +101,31 @@ end
   end
 
   ###############################################################################
-  # fonction pour remettre les phrases a la normal
-  def decode_utf(mot)
-  mot.gsub!("Ã©", "é")
-  mot.gsub!("Ã¨", "è")
-  mot.gsub!("Ãª", "ê")
-  mot.gsub!("Ã«", "ë")
-  mot.gsub!("Ã¢", "â")
-  mot.gsub!("Ã§", "ç")
-  mot.gsub!("Ã®", "î")
-  mot.gsub!("Ã´", "ô")
-  mot.gsub!("Ã¹", "ù")
-  mot.gsub!("Ã¼", "ü")
-  mot.gsub!("Ã»", "û")
-  mot.gsub!("Ã¤", "ä")
-  mot.gsub!("Ã¶", "ö")
-  mot.gsub!("Â°", "°")
-  mot.gsub!("Ã", "É")
-  mot.gsub!("Ã", "È")
-  mot.gsub!("Ã", "Ê")
-  mot.gsub!("Ã«", "Ë")
-  mot.gsub!("Ã¢", "Â")
-  mot.gsub!("Ã®", "Î")
-  mot.gsub!("", "'")
-  mot.gsub!("'", " ")
-  mot.gsub!("â\u0082¬", "$")
-  mot.gsub!("Ã ", "à")
-  mot.gsub!("â\u0080\u0093", "-")
-  mot.gsub!("â'", "'")
-  return mot
-end
-
-###############################################################################
   def check_title(url, page)
     # ( page = id de la page )
     error_title_count = 0
     title = []
     page = Page.find_by(id: page)
     doc = Nokogiri::HTML(URI.open(url))
-    doc.css('h1').each {|h1| title << "H1" + decode_utf(h1.text) } unless doc.css('h1').nil? || doc.css('h1') == ""
-    doc.css('h2').each {|h2| title << "H2" + decode_utf(h2.text) } unless doc.css('h2').nil? || doc.css('h2') == ""
-    doc.css('h3').each {|h3| title << "H3" + decode_utf(h3.text) } unless doc.css('h3').nil? || doc.css('h3') == ""
-    doc.css('h4').each {|h4| title << "H4" + decode_utf(h4.text) } unless doc.css('h4').nil? || doc.css('h4') == ""
-    doc.css('h5').each {|h5| title << "H5" + decode_utf(h5.text) } unless doc.css('h5').nil? || doc.css('h5') == ""
-    doc.css('h6').each {|h6| title << "H6" + decode_utf(h6.text) } unless doc.css('h6').nil? || doc.css('h6') == ""
+    doc.css('h1').each {|h1| title << "H1" + Page::decode_utf(h1.text) } unless doc.css('h1').nil? || doc.css('h1') == ""
+    doc.css('h2').each {|h2| title << "H2" + Page::decode_utf(h2.text) } unless doc.css('h2').nil? || doc.css('h2') == ""
+    doc.css('h3').each {|h3| title << "H3" + Page::decode_utf(h3.text) } unless doc.css('h3').nil? || doc.css('h3') == ""
+    doc.css('h4').each {|h4| title << "H4" + Page::decode_utf(h4.text) } unless doc.css('h4').nil? || doc.css('h4') == ""
+    doc.css('h5').each {|h5| title << "H5" + Page::decode_utf(h5.text) } unless doc.css('h5').nil? || doc.css('h5') == ""
+    doc.css('h6').each {|h6| title << "H6" + Page::decode_utf(h6.text) } unless doc.css('h6').nil? || doc.css('h6') == ""
 
     # p title
     # verif balise h1 double
     if doc.css('h1').size > 1
       Seoerror.create(page_id: page.id, text: "h1 double")
     end
-    # title for check = (enleve les H1 ext devant pour compter le bon nombres de titres ext)
-    # title.each do |word|
-    #   word.gsub("H1", "") || word.gsub("H2","")
-    #   word.gsub("H3", "") || word.gsub("H4", "")
-    #   word.gsub("H5", "") || word.gsub("H6", "")
-    #   title_for_check << word
-    # end
-
     # verif titre doublon
     check_word(title, page.id)
-
     # les - 2 pour ne pas compter les H? devant
-
     title.each do |t|
       if t.size - 2 > 70
         Hxerror.create(page_id: page.id, text: "HX avec trop de char (+70): #{t}")
       end
-      # verif si la taille des mots dans le titre es plus grand que 4
-
-      # verif si le titre est trop court
-      # if t.size - 2 < 30
-      #   error_title_count += 1
-      #   Hxerror.create(page_id: page.id, text: "titres moins de 30 Char:  #{t} (taille: #{t.size - 2})")
-      # end
     end
   end
   ############################################################
@@ -185,10 +135,10 @@ end
     page = Page.find_by(id: id)
     doc = Nokogiri::HTML(URI.open(page.url))
     doc.css('img').each do |img|
-      if img["data-lazy-src"].nil?
+      if !img[:src].end_with?('.gif') && !img[:src].start_with?('data:')
         if img[:alt] == ""
           Seoerror.create(page_id: page.id, text: "pas d'alt sur l'image #{img[:src]}")
-        elsif decode_utf(img[:alt]).size > 125
+        elsif Page::decode_utf(img[:alt]).size > 125
           Seoerror.create(page_id: page.id, text: "alt de l'image trop longue sur: #{img[:src]}")
         end
       end
@@ -216,9 +166,11 @@ end
           end
       end
 
-      doc.css('img').each do |link|
-        if link[:src].include?('_')
-          Seoerror.create( ligne: link.line, page_id: page.id, text: "image avec underscore #{link[:src]}")
+      doc.css('img').each do |img|
+        if !img[:src].end_with?('.gif') && !img[:src].start_with?('data:')
+          if img[:src].include?('_')
+            Seoerror.create( ligne: img.line, page_id: page.id, text: "image avec underscore #{img[:src]}")
+          end
         end
       end
 
@@ -284,14 +236,13 @@ end
      if !lien.include?(@site.url)
         Page.create(url: @site.url, site_id: @site.id)
      end
+
     lien.each do |link|
       if link.start_with?('./')
         link = url + link.gsub!('./', '/')
       end
       next if check_sitemap_link(link) != 'good'
-       doc = Nokogiri::HTML(URI.open(link))
-      meta_desc = doc.css('meta[name="description"]').text
-      Page.create(url: link, site_id: @site.id, content: doc.content.to_s, meta_description: meta_desc)
+      Page.create(url: link, site_id: @site.id)
     end
     # recup des pages du site
     @pages = Page.where(site_id: @site.id)
@@ -309,6 +260,7 @@ end
       check_canonical(page.id)
       check_div(page.id)
       check_url(page.id)
+      Page::check_balise_ordonnancement(page.id) # methode déclarer dans models/Page.rb (class)
     end
     redirect_to site_path(@site), notice: "Site crawlé avec succès"
 
@@ -361,7 +313,7 @@ end
         return link_sitemap.flatten
     end
 
-
+###########################################################################
   def get_links_sitemap(url_sitemap, url_du_site)
     link_sitemap = []
     doc = Nokogiri::XML(URI.open(url_sitemap))
@@ -412,9 +364,7 @@ def sitemap
 
   Page.where(site_id: @site.id).destroy_all
   lien_sitemap.flatten.each do |lien|
-      doc = Nokogiri::HTML(URI.open(lien))
-      meta_desc = doc.css('meta[name="description"]').text
-      Page.create(url: lien, site_id: @site.id, content: doc.content.to_s, meta_description: meta_desc)
+      Page.create(url: lien, site_id: @site.id)
   end
 
     @pages = Page.where(site_id: @site.id)
@@ -432,6 +382,7 @@ def sitemap
       check_canonical(page.id)
       check_div(page.id)
       check_url(page.id)
+      Page::check_balise_ordonnancement(page.id) # methode déclarer dans models/Page.rb (class)
     end
     redirect_to site_path(@site.id), notice: "url sitemap crawlé avec succès"
 end
