@@ -10,7 +10,7 @@ const copyLink = () => {
       setInterval(() => {
         button.innerHTML = `<i class="fa-solid fa-clone" title="copier"></i>`;
         button.classList.remove('copied');
-      }, 500);
+      }, 700);
 
     });
   });

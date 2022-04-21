@@ -19,6 +19,8 @@
       </span>
     <% end %>
 
+    <span class="pages-count"><%= @site.pages.count %></span>
+
   <% elsif controller_name == "pages" && action_name == "show"%>
     <%= link_to site_path(@site.id, anchor: "page-#{@page.id}")  do %>
     <span id='btn-retour'>

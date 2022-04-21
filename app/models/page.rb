@@ -48,6 +48,7 @@ def self.check_balise_ordonnancement(id)
 page = Page.find_by(id: id)
 doc = Nokogiri::HTML(URI.open(page.url))
 hash = {}
+erreurs = []
 i = 100 # mis a 100 pour recup tjr 3 integer a la fin du string
 
 good_page = []
@@ -101,21 +102,26 @@ a.each { |h| good_page << h.split(regex_2) }
 
     hash.each do |k, v|
       all_h2.each do |key_H2, h2_value|
-        h2_value = h2_value[h2_value.size - 3] + h2_value[h2_value.size - 2] + h2_value[h2_value.size - 1]
+        ligne_h2 = h2_value[h2_value.size - 3] + h2_value[h2_value.size - 2] + h2_value[h2_value.size - 1]
         all_h4.each do |key_h4, h4_value|
-          h4_value = h4_value[h4_value.size - 3] + h4_value[h4_value.size - 2] + h4_value[h4_value.size - 1]
+          ligne_h4 = h4_value[h4_value.size - 3] + h4_value[h4_value.size - 2] + h4_value[h4_value.size - 1]
           entre_balise = []
-          range = h2_value..h4_value
+          range = ligne_h2..ligne_h4
           #e = element de range = value entre H2 et H4
           range.each do |e|
             entre_balise << a.key(e) unless a.key(e).nil?
           end
           if !entre_balise.include?(:h3)
-            Hxerror.create(page_id: page.id, text: "erreur entre balise H2 (#{h2_value}) et H4 (#{h4_value}) pas de balise H3")
+            erreurs << "erreur entre balise H2 et h4 pas de balise H3"
           end
       end
     end
   end
-
+  erreurs.uniq!
+  erreurs.each do |e|
+    Seoerror.create(page_id: page.id, text: e)
+  end
 end
+
+
 end
