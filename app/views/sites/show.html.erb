@@ -2,7 +2,7 @@
 <div class="container-site-pages">
   <% @site.pages.each do |page| %>
 
-      <div class="container-pages-url" id=page-<%= page.id %>>
+    <div class="container-pages-url" id=page-<%= page.id %>>
 
       <%# partie nombre d'erreur de la page %>
           <% if page.seoerrors.count >= 1 || page.hxerrors.count >= 1 %>
@@ -12,24 +12,26 @@
           <% end %>
 
         <%# partie lien de la page afficher %>
-        <div class='url-du-site'>
+        <div class="url-de-la-page-<%= page.id %> url-page-show-site">
             <%= page.url %>
         </div>
-          <%# partie du button pour aller sur la page %>
-        <%= link_to page_path(page.id) do %>
-            <div class='btn-voir'>
-              <i class="fa-solid fa-eye"></i>
-            </div>
-        <% end %>
 
     </div>
+    <%# ef %>
+
+        <%# BUTTON COPIER %>
+        <div class="btn-copier" data-pageid=<%= page.id %>>
+          <i class="fa-solid fa-clone" title="copier"></i>
+        </div>
+
+          <%# partie du button pour aller sur la page %>
+        <%= link_to page_path(page.id) do %>
+          <div class='btn-voir-2'>
+              <i class="fa-solid fa-eye"></i>
+          </div>
+        <% end %>
+            <%# ef %>
   <% end %>
 </div>
 
-<%= @site.pages.count %>
-
-<%= link_to site_destroy_path(@site.id), method: :delete, data: {confirm: "tu es sure ? "} do %>
-  <div class="destroy-site">
-    <%= "destroy" %>
-  </div>
-<% end %>
+<%# <%= @site.pages.count %>
