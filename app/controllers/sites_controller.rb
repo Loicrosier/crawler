@@ -45,7 +45,7 @@ def get_urls(site)
   end
 
 
-  link_crawl.reject! { |link| link.nil? || !link.start_with?(site) || link.end_with?('.pdf') }
+  link_crawl.reject! { |link| link.nil? || !link.start_with?(site) || link.end_with?('.pdf') || link.end_with?('jpg') }
   link_crawl.each { |link| link.gsub!("%20", "") } # pour enlever les espaces (espaces dans les urls %20)
   link_crawl.uniq!
 

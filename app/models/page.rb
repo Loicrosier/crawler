@@ -44,71 +44,78 @@ end
 ###############################################################################
 
 
-  def self.check_balise_ordonnancement(id)
-      page = Page.find_by(id: id)
-      doc = Nokogiri::HTML(URI.open(page.url))
-      balise_H1 = []
-      balise_H2 = []
-      balise_H3 = []
-      balise_H4 = []
-      balise_H5 = []
-      balise_H6 = []
-      i = 0
-      doc.to_s.each_line('br', chomp: true) do |s|
-          i += 1
-          s.scan(/<h1>(.*?)<\/h1>/).flatten.each { |h1| balise_H1 << h1 + "  (ligne:  " + i.to_s + ")" }
-          s.scan(/<h2>(.*?)<\/h2>/).flatten.each { |h2| balise_H2 << h2 + "  (ligne:  " + i.to_s + ")" }
-          s.scan(/<h3>(.*?)<\/h3>/).flatten.each { |h3| balise_H3 << h3 + "  (ligne:  " + i.to_s + ")" }
-          s.scan(/<h4>(.*?)<\/h4>/).flatten.each { |h4| balise_H4 << h4 + "  (ligne:  " + i.to_s + ")" }
-          s.scan(/<h5>(.*?)<\/h5>/).flatten.each { |h5| balise_H5 << h5 + "  (ligne:  " + i.to_s + ")" }
-          s.scan(/<h6>(.*?)<\/h6>/).flatten.each { |h6| balise_H6 << h6 + "  (ligne:  " + i.to_s + ")" }
+def self.check_balise_ordonnancement(id)
+page = Page.find_by(id: id)
+doc = Nokogiri::HTML(URI.open(page.url))
+hash = {}
+i = 100 # mis a 100 pour recup tjr 3 integer a la fin du string
+
+good_page = []
+regex_1 = "\n"
+regex_2 = "> "
+h2_i = 0
+h3_i = 0
+h4_i = 0
+h5_i = 0
+h6_i = 0
+a = doc.to_s.split(regex_1)
+a.each { |h| good_page << h.split(regex_2) }
+
+ good_page.flatten.each do |s|
+  i += 1
+    if s.match(/h1/) && s.match(/<\/h1/)
+        hash.merge!(h1: s + i.to_s)
+    end
+
+    if s.match(/h2/) && s.match(/<\/h2/)
+        h2_i += 1
+        hash.merge!("h2#{h2_i}": s + i.to_s)
+    end
+
+      if s.match(/h3/) && s.match(/<\/h3/)
+        h3_i += 1
+        hash.merge!("h3#{h3_i}": s + i.to_s)
       end
-      # balise_H2.each do |h2|
-      #   ligne_h2 = h2[h2.size - 3] + h2[h2.size - 2]
-      #   balise_H1.each do |h1|
-      #     ligne_h1 = h1[h1.size - 3] + h1[h1.size - 2]
 
-      #     if ligne_h1.to_i > ligne_h2.to_i
-      #       Hxerror.create(page_id: page.id, text: "ERREUR BALISE H2 : #{decode_utf(h2.gsub(h2.last(12), ""))} DEVANT BALISE H1 #{decode_utf(h1.gsub(h1.last(12), ""))}")
-      #     end
-      #   end
-      # end
-      # balise_H3.each do |h3|
-      #   ligne_h3 = h3[h3.size - 3] + h3[h3.size - 2]
-      #   balise_H2.each do |h2|
-      #     ligne_h2 = h2[h2.size - 3] + h2[h2.size - 2]
-      #     if ligne_h2.to_i > ligne_h3.to_i
-      #      Hxerror.create(page_id: page.id, text: "ERREUR BALISE H3 : #{decode_utf(h3.gsub(h3.last(12), ""))} DEVANT BALISE H2 #{decode_utf(h2.gsub(h2.last(12), ""))}")
-      #     end
-      #   end
-      # end
-      # balise_H4.each do |h4|
-      #   ligne_h4 = h4[h4.size - 3] + h4[h4.size - 2]
-      #   balise_H3.each do |h3|
-      #     ligne_h3 = h3[h3.size - 3] + h3[h3.size - 2]
-      #     if ligne_h3.to_i > ligne_h4.to_i
-      #       Hxerror.create(page_id: page.id, text: "ERREUR BALISE H4 : #{decode_utf(h4.gsub(h4.last(12), ""))} DEVANT BALISE H3 #{decode_utf(h3.gsub(h3.last(12), ""))}")
-      #     end
-      #   end
-      # end
-      # balise_H5.each do |h5|
-      #   ligne_h5 = h5[h5.size - 3] + h5[h5.size - 2]
-      #   balise_H4.each do |h4|
-      #     ligne_h4 = h4[h4.size - 3] + h4[h4.size - 2]
-      #     if ligne_h4.to_i > ligne_h5.to_i
-      #       Hxerror.create(page_id: page.id, text: "ERREUR BALISE H5 : #{decode_utf(h5.gsub(h2.last(12), ""))} DEVANT BALISE H4 #{decode_utf(h4.gsub(h4.last(12), ""))}")
-      #     end
-      #   end
-      # end
-      # balise_H6.each do |h6|
-      #   ligne_h6 = h6[h6.size - 3] + h6[h6.size - 2]
-      #   balise_H5.each do |h5|
-      #     ligne_h5 = h5[h5.size - 3] + h5[h5.size - 2]
-      #     if ligne_h5.to_i > ligne_h6.to_i
-      #       Hxerror.create(page_id: page.id, text: "ERREUR BALISE H6 : #{decode_utf(h6.gsub(h6.last(12), ""))} DEVANT BALISE H5 #{decode_utf(h5.gsub(h5.last(12), ""))}")
-      #     end
-      #   end
-      # end
+    if s.match(/h4/) && s.match(/<\/h4/)
+      h4_i += 1
+      hash.merge!("h4#{h4_i}": s + i.to_s)
+    end
 
+    if s.match(/h5/) && s.match(/<\/h5/)
+      h5_i += 1
+      hash.merge!("h5#{h5_i}": s + i.to_s)
+    end
+ end
+ hash.sort_by { |k, v| v[v.size - 3] + v[v.size - 2] + v[v.size - 1] }
+
+ # check si le h1 n'est pas en premier de la page
+  if !hash.first.to_s.include?("h1")
+     Hxerror.create(page_id: page.id, text: "h1 n'est pas la premiere balise H de la page")
   end
+
+ # check de si balise h2 a H4 pas de H3
+
+    all_h2 = hash.select { |k, v| k.to_s.include?("h2") }
+    all_h4 = hash.select { |k, v| k.to_s.include?("h4") }
+
+    hash.each do |k, v|
+      all_h2.each do |key_H2, h2_value|
+        h2_value = h2_value[h2_value.size - 3] + h2_value[h2_value.size - 2] + h2_value[h2_value.size - 1]
+        all_h4.each do |key_h4, h4_value|
+          h4_value = h4_value[h4_value.size - 3] + h4_value[h4_value.size - 2] + h4_value[h4_value.size - 1]
+          entre_balise = []
+          range = h2_value..h4_value
+          #e = element de range = value entre H2 et H4
+          range.each do |e|
+            entre_balise << a.key(e) unless a.key(e).nil?
+          end
+          if !entre_balise.include?(:h3)
+            Hxerror.create(page_id: page.id, text: "erreur entre balise H2 (#{h2_value}) et H4 (#{h4_value}) pas de balise H3")
+          end
+      end
+    end
+  end
+
+end
 end
