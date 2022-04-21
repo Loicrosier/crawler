@@ -1,7 +1,9 @@
 
 <div class="container-site-pages">
   <% @site.pages.each do |page| %>
-      <div class="container-pages-url">
+
+      <div class="container-pages-url" id=page-<%= page.id %>>
+
       <%# partie nombre d'erreur de la page %>
           <% if page.seoerrors.count >= 1 || page.hxerrors.count >= 1 %>
         <span id=nombre-derreur>

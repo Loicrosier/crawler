@@ -20,7 +20,7 @@
     <% end %>
 
   <% elsif controller_name == "pages" && action_name == "show"%>
-    <%= link_to site_path(@site.id) do %>
+    <%= link_to site_path(@site.id, anchor: "page-#{@page.id}")  do %>
     <span id='btn-retour'>
       <i class="fa-solid fa-backward"></i>
     </span>
