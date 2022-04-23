@@ -93,11 +93,14 @@ end
   ###############################################################################
   # fonction pour comparer 2mots dans un tableau
   def check_word(tableau, page_id)
+    erreurs = []
     tableau.each do |mot|
       if tableau.count(mot) > 1
-        Hxerror.create(page_id: page_id, text: "TITRES DUPLIQUER : #{mot}")
+       erreurs << "TITRES DUPLIQUER : #{mot}"
       end
     end
+    erreurs.uniq!
+    erreurs.each { |erreur| Hxerror.create(page_id: page_id, text: erreur) }
   end
 
   ###############################################################################
@@ -208,9 +211,17 @@ end
       redirect_to site_new_path, notice: "Erreur lors de la création du site (#{@site.errors.full_messages})"
     end
   end
-
+# A FINIR DEMAIN TRIE PAR ERREUR PLUS GRAND A PETIT DESC
   def show
     @site = Site.find(params[:id])
+    nombre_derreur = 0
+    @site.pages.each do |page|
+      erreur_h = Hxerror.where(page_id: page.id).size
+      erreur_seo = Seoerror.where(page_id: page.id).size
+       nombre_derreur = erreur_seo + erreur_h
+       page.update(content: nombre_derreur.to_s) # content = nombre d'erreur (faire migration pour changer le nom de la colonne)
+    end
+    @pages = @site.pages.order(content: :asc)
   end
 
   def index
