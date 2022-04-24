@@ -38,6 +38,12 @@ class Page < ApplicationRecord
   mot.gsub!("&Atilde;&reg;", "®")
   mot.gsub!("&Atilde;&trade;", "™")
   mot.gsub!("&acirc;&#128;&#153;", "'")
+  mot.gsub!("\t", "")
+  mot.gsub!("\n", "")
+  mot.gsub!("\r", "")
+  mot.gsub!("\r\n", "")
+  mot.gsub!("\n\r", "")
+  mot.gsub!("\r\n\r\n", "")
   return mot
 end
 
@@ -47,7 +53,7 @@ end
 def self.check_balise_ordonnancement(id)
   page = Page.find_by(id: id)
   doc = Nokogiri::HTML(URI.open(page.url))
-    hash = {}
+  hash = {}
   i = 1000 # mis a 100 pour recup tjr 3 integer a la fin du string
   erreurs = []
   h2_i = 0
@@ -58,32 +64,45 @@ def self.check_balise_ordonnancement(id)
   good_page = doc.to_s.split(/\n/)
 
   good_page.flatten.each do |s|
-      i += 1
-      if s.match(/h1/) && s.match(/<\/h1/)
-          hash.merge!("h1": i.to_s + s)
-      end
-
-      if s.match(/h2/) && s.match(/<\/h2/)
-          h2_i += 1
-          hash.merge!("h2/ #{h2_i}": i.to_s + s)
-      end
-
-        if s.match(/h3/) && s.match(/<\/h3/)
-          h3_i += 1
-          hash.merge!("h3/ #{h3_i}": i.to_s + s)
-        end
-
-      if s.match(/h4/) && s.match(/<\/h4/)
-        h4_i += 1
-        hash.merge!("h4/ #{h4_i}": i.to_s + s)
-      end
-        if s.match(/h5/) && s.match(/<\/h5/)
-          h5_i += 1
-          hash.merge!("h5 #{h5_i}": i.to_s + s)
-        end
+    if s.match(/h1/) && s.match(/<\/h1/)
+      h1 = doc.css('h1').text unless doc.css('h1').text.nil?
+      hash.merge!("h1": i.to_s + "<h1>" + h1 + "</h1>" )
     end
 
-    i = 0
+    if s.match(/h2/) && s.match(/<\/h2/)
+      h2 = doc.css('h2')[h2_i].text unless doc.css('h2')[h2_i].text.nil?
+      h2_i += 1
+      hash.merge!("h2/ #{h2_i}": i.to_s + "<h2>" + h2 + "</h2>" )
+    end
+
+    if s.match(/h3/) && s.match(/<\/h3/)
+      p "h3"
+      h3 = doc.css('h3')[h3_i].text unless doc.css('h3')[h3_i].text.nil?
+      h3_i += 1
+      hash.merge!("h3/ #{h3_i}": i.to_s + "<h3>" + h3 + "</h3>" )
+    end
+
+    if s.match(/h4/) && s.match(/<\/h4/)
+      p "h4"
+      h4 = doc.css('h4')[h4_i].text unless doc.css('h4')[h4_i].text.nil?
+      h4_i += 1
+      hash.merge!("h4/ #{h4_i}": i.to_s + "<h4>" + h4 + "</h4>" )
+    end
+    if s.match(/h5/) && s.match(/<\/h5/)
+      h5 = doc.css('h5')[h5_i].text unless doc.css('h5')[h5_i].text.nil?
+      h5_i += 1
+      hash.merge!("h5 #{h5_i}": i.to_s + "<h5>" + h5 + "</h5>" )
+    end
+
+    if s.match(/h6/) && s.match(/<\/h6/)
+      h6 = doc.css('h6')[h6_i].text unless doc.css('h6')[h6_i].text.nil?
+      h6_i += 1
+      hash.merge!("h6 #{h6_i}": i.to_s + "<h6>" + h6 + "</h6>" )
+    end
+    i += 1
+  end
+
+  i = 0
     tableau_de_range = []
     ligne_h2 = []
     ligne_h4 = []
@@ -102,9 +121,10 @@ def self.check_balise_ordonnancement(id)
       end
       if k.to_s.include?("h4")
         # key_h4 = k.to_s # pour check son num de balise si h41 ou h42 et
-          ligne_h4 << v[0] + v[1] + v[2] + v[3] + " #{k.to_s.gsub!(k[0..1], '')}"
+        ligne_h4 << v[0] + v[1] + v[2] + v[3] + " #{k.to_s.gsub!(k[0..1], '')}"
       end
     end
+
 
     ################################### PARTIE CREATE RANGE ################################################################
 
@@ -116,7 +136,6 @@ def self.check_balise_ordonnancement(id)
       if !ligne_h2_split.nil? && !ligne_h4_split.nil?
          if ligne_h2_split.size == 3 && ligne_h4_split.size == 3 && ligne_h2_split.last == ligne_h4_split.last
            h2_suivant = ligne_h2[i + 1].split unless ligne_h2[i + 1].nil? || ligne_h2[i + 1 ] == "/" # ligne h2 suivante pour cree le range de H4 au H2 suivant
-           p h2_suivant
            if ligne_h2_split.first.to_i < ligne_h4_split.first.to_i
               tableau_de_range << (ligne_h2_split.first..ligne_h4_split.first) #envoi des ranges dans un tableau range de h2 a h4
               if h2_suivant.first.to_i > ligne_h4_split.first.to_i
@@ -133,9 +152,9 @@ def self.check_balise_ordonnancement(id)
     ## boucle pour recup toutesles balises entre h2 et h4 de chaque h2 et h4 et check le contenu entre##############################
     balise_in_range = [] # tableau pour stocker les balises qui sont entre les ranges POS de h2 a h4
 
-    tableau_de_range.each do |ligne|
+    tableau_de_range.each do |ligne| # range de h2 a h4
       check_hash_ligne = hash.transform_values.with_index {|v, i| v[0] + v[1] + v[2] + v[3] }
-      hash_check = check_hash_ligne.sort_by { |k, v| v }.to_h
+      hash_check = check_hash_ligne.sort_by { |k, v| v }.to_h # hash sort by negative value (- a +) avec value que la ligne hash a les values entiers
       # pour recup les balises dans les ranges .key(ligne) pour recup la key depuis la valeur
       balise_in_range << hash_check.key(ligne.first)
       balise_in_range << hash_check.key(ligne)
@@ -144,13 +163,19 @@ def self.check_balise_ordonnancement(id)
       balise_in_range.uniq!
       first_balise_in_range = balise_in_range[1].to_s # 1 parce que la premiere balise est la balise de laquelle elle part
       if hash_check.key(ligne.first).to_s[0..1] == "h2"
-        if first_balise_in_range[0..1] == "h4"
-          erreurs << "erreur DE BALISE #{hash_check.key(ligne.first).to_s} A #{hash_check.key(ligne.last).to_s} pas de balise H3  de haut en bas"
-        end
+          if first_balise_in_range[0..1] == "h4"
+            value_first = hash[hash_check.key(ligne.first)]
+            value_last = hash[hash_check.key(ligne.last)]
+
+            erreurs << "erreur DE BALISE #{hash_check.key(ligne.first).to_s} : (#{decode_utf(value_first).gsub!(value_first[0..3], "")}) A #{hash_check.key(ligne.last).to_s} : (#{decode_utf(value_last).gsub!(value_last[0..3], "")}) pas de balise H3 "
+          end
       elsif hash_check.key(ligne.first).to_s[0..1] == "h4"
-        if first_balise_in_range[0..1] == "h2"
-         erreurs << "erreur DE BALISE #{hash_check.key(ligne.first).to_s} A #{hash_check.key(ligne.last).to_s} pas de balise H3  de haut en bas"
-        end
+          if first_balise_in_range[0..1] == "h2"
+            value_first = hash[hash_check.key(ligne.first)]
+            value_last = hash[hash_check.key(ligne.last)]
+
+            erreurs << "erreur DE BALISE #{hash_check.key(ligne.first).to_s} : (#{decode_utf(value_first).gsub!(value_first[0..3], "")}) A #{hash_check.key(ligne.last).to_s} : (#{decode_utf(value_last).gsub!(value_last[0..3], "")}) pas de balise H3 "
+          end
       end
 
     end
