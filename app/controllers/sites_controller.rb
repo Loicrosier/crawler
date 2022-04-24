@@ -138,7 +138,7 @@ end
     page = Page.find_by(id: id)
     doc = Nokogiri::HTML(URI.open(page.url))
     doc.css('img').each do |img|
-      if !img['alt'].nil?
+      if !img[:src].nil?
         if !img[:src].end_with?('.gif') && !img[:src].start_with?('data:')
           if img[:alt] == ""
             Seoerror.create(page_id: page.id, text: "pas d'alt sur l'image #{img[:src]}")
@@ -172,7 +172,7 @@ end
       end
 
       doc.css('img').each do |img|
-        if !img[:src].end_with?('.gif') && !img[:src].start_with?('data:')
+        if !img[:src].nil? && !img[:src].end_with?('.gif') && !img[:src].start_with?('data:')
           if img[:src].include?('_')
             Seoerror.create( ligne: img.line, page_id: page.id, text: "image avec underscore #{img[:src]}")
           end

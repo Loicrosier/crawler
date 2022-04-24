@@ -47,7 +47,7 @@ end
 def self.check_balise_ordonnancement(id)
   page = Page.find_by(id: id)
   doc = Nokogiri::HTML(URI.open(page.url))
-  hash = {}
+    hash = {}
   i = 1000 # mis a 100 pour recup tjr 3 integer a la fin du string
   erreurs = []
   h2_i = 0
@@ -56,6 +56,7 @@ def self.check_balise_ordonnancement(id)
   h5_i = 0
   h6_i = 0
   good_page = doc.to_s.split(/\n/)
+
   good_page.flatten.each do |s|
       i += 1
       if s.match(/h1/) && s.match(/<\/h1/)
@@ -82,74 +83,80 @@ def self.check_balise_ordonnancement(id)
         end
     end
 
-  i = 0
-  tableau_de_range = []
-  ligne_h2 = []
-  ligne_h4 = []
-
-  hash_sort_pos = hash.sort_by { |k, v| v[0] + v[1] + v[2] + v[3] } # hash sort by negative value (- a +)
+    i = 0
+    tableau_de_range = []
+    ligne_h2 = []
+    ligne_h4 = []
+    hash_sort_pos = hash.sort_by { |k, v| v[0] + v[1] + v[2] + v[3] } # hash sort by negative value (- a +)
 
     ######################################### CHECK SI H1 EST PREMIER DE LA PAGE ###############################################
     if !hash_sort_pos.empty? && !hash_sort_pos[0][0].to_s.include?("h1")
       erreurs << "la balise H1 n'est pas la premiere balise de la page"
     end
-  ########################### boucle pour recup les lignes et cree les ranges##################################################
 
-  hash_sort_pos.each do |k, v|
-    if k.to_s.include?("h2")
-      # key_h2 << k.to_s # pour check son num de balise si h21 ou h22 etc
-      ligne_h2 <<  v[0] + v[1] + v[2] + v[3] + " #{k.to_s.gsub!(k[0..1], '')}"
+    ########################### boucle pour recup les lignes et cree les ranges##################################################
+    hash_sort_pos.each do |k, v|
+      if k.to_s.include?("h2")
+        # key_h2 << k.to_s # pour check son num de balise si h21 ou h22 etc
+        ligne_h2 <<  v[0] + v[1] + v[2] + v[3] + " #{k.to_s.gsub!(k[0..1], '')}"
+      end
+      if k.to_s.include?("h4")
+        # key_h4 = k.to_s # pour check son num de balise si h41 ou h42 et
+          ligne_h4 << v[0] + v[1] + v[2] + v[3] + " #{k.to_s.gsub!(k[0..1], '')}"
+      end
     end
 
-    if k.to_s.include?("h4")
-      # key_h4 = k.to_s # pour check son num de balise si h41 ou h42 et
-        ligne_h4 << v[0] + v[1] + v[2] + v[3] + " #{k.to_s.gsub!(k[0..1], '')}"
-    end
-
-  end
-
-  ################################### PARTIE CREATE RANGE ################################################################
+    ################################### PARTIE CREATE RANGE ################################################################
 
     h2_i.times do |i|
       # check si nil et check si ligne balise h2 1 est ligne balise h4 1 exemple
-      ligne_h2 = ligne_h2[i].split unless ligne_h2[i].nil? # prendre le dernier pour num balise
-      ligne_h4 = ligne_h4[i].split unless ligne_h4[i].nil? # prendre le dernier pour num balise
-      if ligne_h2.size == 3 && ligne_h4.size == 3 && ligne_h2.last == ligne_h4.last
-        if ligne_h2.first.to_i < ligne_h4.first.to_i
-          tableau_de_range << (ligne_h2.first..ligne_h4.first) #envoi des ranges dans un tableau range de h2 a h4
-        else
-          tableau_de_range << (ligne_h4.first..ligne_h2.first)
+      ligne_h2_split = ligne_h2[i].split unless ligne_h2[i].nil? # pour couper et prendre le dernier pour num de la balise
+      ligne_h4_split = ligne_h4[i].split unless ligne_h4[i].nil? # prendre le dernier pour num balise
+
+      if !ligne_h2_split.nil? && !ligne_h4_split.nil?
+         if ligne_h2_split.size == 3 && ligne_h4_split.size == 3 && ligne_h2_split.last == ligne_h4_split.last
+           h2_suivant = ligne_h2[i + 1].split unless ligne_h2[i + 1].nil? || ligne_h2[i + 1 ] == "/" # ligne h2 suivante pour cree le range de H4 au H2 suivant
+           p h2_suivant
+           if ligne_h2_split.first.to_i < ligne_h4_split.first.to_i
+              tableau_de_range << (ligne_h2_split.first..ligne_h4_split.first) #envoi des ranges dans un tableau range de h2 a h4
+              if h2_suivant.first.to_i > ligne_h4_split.first.to_i
+                tableau_de_range << (ligne_h4_split.first..h2_suivant.first) #envoi des ranges dans un tableau range de h4 au H2 suivant
+              end
+            else
+              tableau_de_range << (ligne_h4_split.first..ligne_h2_split.first) #envoi des ranges dans un tableau range de h2 a h4
+            end
+         end
+      end
+    end
+
+    ################################## PARTIE CHECK RANGE ##############################################################
+    ## boucle pour recup toutesles balises entre h2 et h4 de chaque h2 et h4 et check le contenu entre##############################
+    balise_in_range = [] # tableau pour stocker les balises qui sont entre les ranges POS de h2 a h4
+
+    tableau_de_range.each do |ligne|
+      check_hash_ligne = hash.transform_values.with_index {|v, i| v[0] + v[1] + v[2] + v[3] }
+      hash_check = check_hash_ligne.sort_by { |k, v| v }.to_h
+      # pour recup les balises dans les ranges .key(ligne) pour recup la key depuis la valeur
+      balise_in_range << hash_check.key(ligne.first)
+      balise_in_range << hash_check.key(ligne)
+      balise_in_range << hash_check.key(ligne.last)
+      balise_in_range.reject! { |balise| balise.nil? }
+      balise_in_range.uniq!
+      first_balise_in_range = balise_in_range[1].to_s # 1 parce que la premiere balise est la balise de laquelle elle part
+      if hash_check.key(ligne.first).to_s[0..1] == "h2"
+        if first_balise_in_range[0..1] == "h4"
+          erreurs << "erreur DE BALISE #{hash_check.key(ligne.first).to_s} A #{hash_check.key(ligne.last).to_s} pas de balise H3  de haut en bas"
+        end
+      elsif hash_check.key(ligne.first).to_s[0..1] == "h4"
+        if first_balise_in_range[0..1] == "h2"
+         erreurs << "erreur DE BALISE #{hash_check.key(ligne.first).to_s} A #{hash_check.key(ligne.last).to_s} pas de balise H3  de haut en bas"
         end
       end
+
     end
-
-  ################################## PARTIE CHECK RANGE ##############################################################
-  ## boucle pour recup toutesles balises entre h2 et h4 de chaque h2 et h4 et check le contenu entre##############################
-  balise_in_range = [] # tableau pour stocker les balises qui sont entre les ranges POS de h2 a h4
-
-  tableau_de_range.each do |ligne|
-    check_hash_ligne = hash.transform_values.with_index {|v, i| v[0] + v[1] + v[2] + v[3] }
-    hash_check = check_hash_ligne.sort_by { |k, v| v }.to_h
-    # pour recup les balises dans les ranges .key(ligne) pour recup la key depuis la valeur
-    balise_in_range << hash_check.key(ligne.first)
-    balise_in_range << hash_check.key(ligne)
-    balise_in_range << hash_check.key(ligne.last)
-    balise_in_range.reject! { |balise| balise.nil? }
-    balise_in_range.uniq!
-    first_balise_in_range = balise_in_range[1].to_s # 1 parce que la premiere balise est la balise de laquelles elle part
-    if hash_check.key(ligne.first).to_s[0..1] == "h2"
-      if first_balise_in_range[0..1] == "h4"
-        erreurs << "erreur DE BALISE #{hash_check.key(ligne.first).to_s} A #{hash_check.key(ligne.last).to_s} pas de balise H3  de haut en bas"
-      end
-    elsif hash_check.key(ligne.first).to_s[0..1] == "h4"
-      if first_balise_in_range[0..1] == "h2"
-        erreurs << "erreur DE BALISE #{hash_check.key(ligne.first).to_s} A #{hash_check.key(ligne.last).to_s} pas de balise H3  de haut en bas"
-      end
-    end
-
+    erreurs.each {|e| Hxerror.create(page_id: page.id, text: e) }
   end
-erreurs.each { |e| Hxerror.create(text: e) }
-end
+
 
 
 end # end class
