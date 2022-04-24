@@ -56,6 +56,7 @@ def self.check_balise_ordonnancement(id)
   hash = {}
   i = 1000 # mis a 100 pour recup tjr 3 integer a la fin du string
   erreurs = []
+  h1_i = 0
   h2_i = 0
   h3_i = 0
   h4_i = 0
@@ -65,8 +66,9 @@ def self.check_balise_ordonnancement(id)
 
   good_page.flatten.each do |s|
     if s.match(/h1/) && s.match(/<\/h1/)
-      h1 = doc.css('h1').text unless doc.css('h1').text.nil?
-      hash.merge!("h1": i.to_s + "<h1>" + h1 + "</h1>" )
+      h1 = doc.css('h1')[h1_i].text unless doc.css('h1')[h1_i].text.nil?
+      h1_i += 1
+      hash.merge!("h1/ #{h1_i}": i.to_s + "<h1>" + h1 + "</h1>" )
     end
 
     if s.match(/h2/) && s.match(/<\/h2/)

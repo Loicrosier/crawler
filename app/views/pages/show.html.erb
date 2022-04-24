@@ -143,7 +143,7 @@
           <p class='pas-derreur'>Div pas fermée</p>
         <% end %>
   <%# check si erreur d'ordonnancement %>
-      <% if @errors.to_s.scan(/h1 n'est pas la premiere/).count >= 1 || @errors.to_s.scan(/erreur entre balise H2 et H4/).count >= 1 %>
+      <% if @errors.to_s.scan(/la balise H1 n'est pas la premiere/).count >= 1 || @errors.to_s.scan(/erreur DE BALISE/).count >= 1 %>
         <p class="erreur"> erreurs d'ordonnancement </p>
       <% else %>
         <p class="pas-derreur"> erreurs d'ordonnancement </p>
