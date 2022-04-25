@@ -4,41 +4,45 @@
     <h2 id='h2index-site'>il y a <%= Site.all.count %> sites aux totals</h2>
 
   <% elsif controller_name == "sites" && action_name == "new" %>
-      <h2 id='h2new-site'>Ajouter un site</h2>
+    <h2 id='h2new-site'>Ajouter un site</h2>
 
+    <%= link_to sites_path do %>
+        <span id='btn-retour'>
+            <i class="fa-solid fa-backward"></i>
+        </span>
+    <% end %>
+<%# si show site %>
+  <% elsif controller_name == "sites" && action_name == "show"%>
       <%= link_to sites_path do %>
-          <span id='btn-retour'>
-              <i class="fa-solid fa-backward"></i>
-          </span>
+        <span id='btn-retour'>
+          <i class="fa-solid fa-backward"></i>
+        </span>
+      <% end %>
+      <H1 id="h1-siteshow">
+        <%= @site.url %> <br>
+        Il y a <%= @site.pages.count %> pages
+      </H1>
+
+
+      <%= link_to crawl_path(@site.id) do %>
+        <div class="btn-crawl">
+          <i class="fa-solid fa-sitemap"></i>
+        </div>
       <% end %>
 
-  <% elsif controller_name == "sites" && action_name == "show"%>
-    <%= link_to sites_path do %>
-      <span id='btn-retour'>
-        <i class="fa-solid fa-backward"></i>
-      </span>
-    <% end %>
+      <%= link_to sitemap_path(@site.id) do %>
+        <div class="btn-sitemap">
+          <i class="fa-solid fa-sitemap"> sitemap</i>
+        </div>
+      <% end %>
+<%# si show pages %>
+   <% elsif controller_name == "pages" && action_name == "show"%>
+      <%= link_to site_path(@site.id, anchor: "page-#{@page.id}")  do %>
+        <span id='btn-retour'>
+          <i class="fa-solid fa-backward"></i>
+        </span>
+      <% end %>
 
-    <span class="pages-count"><%= @site.pages.count %></span>
-
-  <% elsif controller_name == "pages" && action_name == "show"%>
-    <%= link_to site_path(@site.id, anchor: "page-#{@page.id}")  do %>
-    <span id='btn-retour'>
-      <i class="fa-solid fa-backward"></i>
-    </span>
-    <% end %>
-  <% end %>
-
-<%# fin btn retour %>
-  <% if action_name != "new" %>
-    <%= link_to site_new_path do  %>
-      <span id="ajouter-un-site">
-          <i class="fa-solid fa-plus"></i>
-      </span>
-    <% end %>
-  <% end %>
-  <%#  quand navbar es sur la show des pages %>
-  <% if controller_name == "pages" && action_name == "show" %>
       <div class="container-infos">
         <% if @page.url.size > 45 %>
           <h1 id="title-page"> <%=@page.url.first(42) %>...<h1>
@@ -49,24 +53,16 @@
         <div id="print-screen">
           <i class="fa-solid fa-print"></i>
         </div>
-
       </div>
-  <% end %>
 
-  <%# quand navbar es sur la show site %>
-  <% if controller_name == "sites" && action_name == "show" %>
-    <H1 id="h1-siteshow"><%= @site.url %></H1>
+    <% end  %> <%# fin du if  elsif%>
 
-    <%= link_to crawl_path(@site.id) do %>
-      <div class="btn-crawl">
-        <i class="fa-solid fa-sitemap"></i>
-      </div>
-    <% end %>
 
-    <%= link_to sitemap_path(@site.id) do %>
-      <div class="btn-sitemap">
-        <i class="fa-solid fa-sitemap"> sitemap</i>
-      </div>
+  <% if action_name != "new" %>
+    <%= link_to site_new_path do  %>
+      <span id="ajouter-un-site">
+          <i class="fa-solid fa-plus"></i>
+      </span>
     <% end %>
   <% end %>
 
